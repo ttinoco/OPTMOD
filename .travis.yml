@@ -14,6 +14,7 @@ install:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
       sudo easy_install nose;
     fi
+  - pip install cython numpy
   - pip install -r requirements.txt
 
 script: 
