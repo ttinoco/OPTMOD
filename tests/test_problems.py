@@ -317,5 +317,32 @@ class TestProblems(unittest.TestCase):
         
     def test_solve_NLP_constrained(self):
 
-        pass
+        # Hock-Schittkowski
+        # Problem 71
+
+        x1 = optmod.Variable('x1', value=1)
+        x2 = optmod.Variable('x2', value=5)
+        x3 = optmod.Variable('x3', value=5)
+        x4 = optmod.Variable('x4', value=1)
+
+        f = x1*x4*(x1+x2+x3) + x3
+        
+        constraints = [x1*x2*x3*x4 >= 25,
+                       x1*x1 + x2*x2 + x3*x3 + x4*x4 == 40,
+                       1 <= x1, x1 <= 5,
+                       1 <= x2, x2 <= 5,
+                       1 <= x3, x3 <= 5,
+                       1 <= x4, x4 <= 5]
+
+        p = optmod.Problem(minimize(f), constraints=constraints)
+        
+        p.solve(solver='inlp', parameters={'quiet': True})
+
+        self.assertAlmostEqual(f.get_value(), 17.0140173, places=3)
+        self.assertAlmostEqual(x1.get_value(), 1., places=3)
+        self.assertAlmostEqual(x2.get_value(), 4.7429994, places=3)
+        self.assertAlmostEqual(x3.get_value(), 3.8211503, places=3)
+        self.assertAlmostEqual(x4.get_value(), 1.3794082, places=3)
+        
+        
     

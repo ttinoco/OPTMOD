@@ -267,11 +267,11 @@ class Problem(object):
         p.eval = types.MethodType(eval, p)
                 
         # Combine H
-        def combine_H(obj, lam, ensure_psd=False):
-
+        def combine_H(obj, lam, ensure_psd=False):            
             offset = 0
-            for nnz in obj.H_comb_nnz:
-                obj.H_combined.data[offset:offset+nnz] *= lam[offset:offset+nnz]
+            assert(lam.size == obj.H_comb_nnz.size)
+            for i, nnz in enumerate(obj.H_comb_nnz):                
+                obj.H_combined.data[offset:offset+nnz] *= lam[i]
                 offset += nnz
             
         p.combine_H = types.MethodType(combine_H, p)
