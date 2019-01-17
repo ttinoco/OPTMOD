@@ -27,7 +27,7 @@ constraints = [x1*x2*x3*x4 >= 25,
                1 <= x3, x3 <= 5,
                1 <= x4, x4 <= 5]
 
-p = Problem(minimize(f), constraints=constraints)
+p = Problem(minimize(f), constraints)
 
 p.solve(solver='ipopt', parameters={'quiet': True})
 
