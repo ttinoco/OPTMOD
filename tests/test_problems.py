@@ -319,7 +319,7 @@ class TestProblems(unittest.TestCase):
 
         # Hock-Schittkowski
         # Problem 71
-
+        
         x1 = optmod.Variable('x1', value=1)
         x2 = optmod.Variable('x2', value=5)
         x3 = optmod.Variable('x3', value=5)
