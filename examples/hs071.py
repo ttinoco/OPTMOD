@@ -19,7 +19,7 @@ constraints = [x1*x2*x3*x4 >= 25,
 
 p = Problem(minimize(f), constraints=constraints)
 
-p.solve(solver='inlp', parameters={'quiet': False})
+p.solve(solver='ipopt', parameters={'quiet': True})
 
 print(f.get_value())
 

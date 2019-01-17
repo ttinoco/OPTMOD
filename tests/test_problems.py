@@ -335,9 +335,12 @@ class TestProblems(unittest.TestCase):
                        1 <= x4, x4 <= 5]
 
         p = optmod.Problem(minimize(f), constraints=constraints)
-        
-        p.solve(solver='inlp', parameters={'quiet': False}) # debuggin in macOS
 
+        try:
+            p.solve(solver='ipopt', parameters={'quiet': True})
+        except ImportError:
+            raise unittest.SkipTest('ipopt not available')
+        
         self.assertAlmostEqual(f.get_value(), 17.0140173, places=3)
         self.assertAlmostEqual(x1.get_value(), 1., places=3)
         self.assertAlmostEqual(x2.get_value(), 4.7429994, places=3)

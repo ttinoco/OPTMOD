@@ -29,18 +29,18 @@ constraints = [x1*x2*x3*x4 >= 25,
 
 p = Problem(minimize(f), constraints=constraints)
 
-p.solve(solver='inlp', parameters={'quiet': False})
+p.solve(solver='ipopt', parameters={'quiet': True})
 
 print(f.get_value())
 
 for x in [x1, x2, x3, x4]:
-    print(x, x.get_value())    
-````
+    print(x, x.get_value())
+```
 
 The solution output is
 ```python
 17.014
-x1, 1.000
+x1, 0.999
 x2, 4.742
 x3, 3.821
 x4, 1.379
