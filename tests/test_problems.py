@@ -336,7 +336,7 @@ class TestProblems(unittest.TestCase):
 
         p = optmod.Problem(minimize(f), constraints=constraints)
         
-        p.solve(solver='inlp', parameters={'quiet': True})
+        p.solve(solver='inlp', parameters={'quiet': False}) # debuggin in macOS
 
         self.assertAlmostEqual(f.get_value(), 17.0140173, places=3)
         self.assertAlmostEqual(x1.get_value(), 1., places=3)
