@@ -8,3 +8,4 @@ from . import problem
 from .variable import Variable
 from .function import sin, cos
 from .problem import minimize, maximize, Problem
+from .utils import sum
