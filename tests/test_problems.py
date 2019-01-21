@@ -309,7 +309,11 @@ class TestProblems(unittest.TestCase):
         # Problem
         p = optmod.Problem(minimize(f))
 
-        status = p.solve(solver='inlp', parameters={'quiet': True})
+        try:
+            status = p.solve(solver='ipopt', parameters={'quiet': True})
+        except ImportError:
+            raise unittest.SkipTest('ipopt not available')
+        
         self.assertEqual(status, 'solved')
         self.assertAlmostEqual(f.get_value(), 0, places=4)
         self.assertLess(norm(x.get_value()-np.ones((5,1)), np.inf), 1e-2)
