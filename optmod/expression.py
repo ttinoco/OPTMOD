@@ -286,15 +286,18 @@ class ExpressionMatrix(object):
 
     def __repr__(self):
 
-        s = ''
+        s = '['
         for i in range(self.shape[0]):
-            s += '[ '
+            s += '[ ' if i == 0 else ' [ '
             for j in range(self.shape[1]):
                 if j < self.shape[1]-1:
                     s += '%s, ' %str(self[i,j])
                 else:
                     s += '%s' %str(self[i,j])
-            s += ' ]\n'
+            s += ' ]'
+            if i < self.shape[0]-1:
+                s += ',\n'
+        s += ']\n'
         return s
 
     def __getitem__(self, key):

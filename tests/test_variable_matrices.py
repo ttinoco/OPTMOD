@@ -46,8 +46,8 @@ class TestVariableMatrices(unittest.TestCase):
 
         x = optmod.variable.VariableMatrix(name='x', shape=(2,3))
         s1 = str(x)
-        s2 = ('[ x[0,0], x[0,1], x[0,2] ]\n' +
-              '[ x[1,0], x[1,1], x[1,2] ]\n')
+        s2 = ('[[ x[0,0], x[0,1], x[0,2] ],\n' +
+              ' [ x[1,0], x[1,1], x[1,2] ]]\n')
         self.assertEqual(s1, s2)              
 
     def test_value(self):

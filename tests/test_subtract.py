@@ -85,8 +85,8 @@ class TestSubtract(unittest.TestCase):
         self.assertTrue(isinstance(f.get_value(), np.matrix))
         self.assertTrue(np.all(f.get_value() == 2. - r))
         self.assertEqual(str(f),
-                         ('[ x - %s, x - %s, x - %s ]\n' %(rn(r[0,0]), rn(r[0,1]), rn(r[0,2])) +
-                          '[ x - %s, x - %s, x - %s ]\n' %(rn(r[1,0]), rn(r[1,1]), rn(r[1,2]))))
+                         ('[[ x - %s, x - %s, x - %s ],\n' %(rn(r[0,0]), rn(r[0,1]), rn(r[0,2])) +
+                          ' [ x - %s, x - %s, x - %s ]]\n' %(rn(r[1,0]), rn(r[1,1]), rn(r[1,2]))))
 
         f = r - x
         self.assertTrue(isinstance(f, optmod.expression.ExpressionMatrix))
@@ -99,22 +99,22 @@ class TestSubtract(unittest.TestCase):
         self.assertTrue(isinstance(f.get_value(), np.matrix))
         self.assertTrue(np.all(f.get_value() == r - 2.))
         self.assertEqual(str(f),
-                         ('[ %s - x, %s - x, %s - x ]\n' %(rn(r[0,0]), rn(r[0,1]), rn(r[0,2])) +
-                          '[ %s - x, %s - x, %s - x ]\n' %(rn(r[1,0]), rn(r[1,1]), rn(r[1,2]))))
+                         ('[[ %s - x, %s - x, %s - x ],\n' %(rn(r[0,0]), rn(r[0,1]), rn(r[0,2])) +
+                          ' [ %s - x, %s - x, %s - x ]]\n' %(rn(r[1,0]), rn(r[1,1]), rn(r[1,2]))))
 
         f = x - np.matrix(r)
         self.assertTrue(isinstance(f, optmod.expression.ExpressionMatrix))
         self.assertTrue(np.all(f.get_value() == 2. - r))
         self.assertEqual(str(f),
-                         ('[ x - %s, x - %s, x - %s ]\n' %(rn(r[0,0]), rn(r[0,1]), rn(r[0,2])) +
-                          '[ x - %s, x - %s, x - %s ]\n' %(rn(r[1,0]), rn(r[1,1]), rn(r[1,2]))))
+                         ('[[ x - %s, x - %s, x - %s ],\n' %(rn(r[0,0]), rn(r[0,1]), rn(r[0,2])) +
+                          ' [ x - %s, x - %s, x - %s ]]\n' %(rn(r[1,0]), rn(r[1,1]), rn(r[1,2]))))
 
         f = np.matrix(r) - x
         self.assertTrue(isinstance(f, optmod.expression.ExpressionMatrix))
         self.assertTrue(np.all(f.get_value() == r - 2.))
         self.assertEqual(str(f),
-                         ('[ %s - x, %s - x, %s - x ]\n' %(rn(r[0,0]), rn(r[0,1]), rn(r[0,2])) +
-                          '[ %s - x, %s - x, %s - x ]\n' %(rn(r[1,0]), rn(r[1,1]), rn(r[1,2]))))
+                         ('[[ %s - x, %s - x, %s - x ],\n' %(rn(r[0,0]), rn(r[0,1]), rn(r[0,2])) +
+                          ' [ %s - x, %s - x, %s - x ]]\n' %(rn(r[1,0]), rn(r[1,1]), rn(r[1,2]))))
 
         f = y - 1
         self.assertTrue(isinstance(f, optmod.expression.ExpressionMatrix))
@@ -127,8 +127,8 @@ class TestSubtract(unittest.TestCase):
         self.assertTrue(isinstance(f.get_value(), np.matrix))
         self.assertTrue(np.all(f.get_value() == np.array(value) - 1))
         self.assertEqual(str(f),
-                         ('[ y[0,0] - %s, y[0,1] - %s, y[0,2] - %s ]\n' %(rn(1), rn(1), rn(1)) +
-                          '[ y[1,0] - %s, y[1,1] - %s, y[1,2] - %s ]\n' %(rn(1), rn(1), rn(1))))
+                         ('[[ y[0,0] - %s, y[0,1] - %s, y[0,2] - %s ],\n' %(rn(1), rn(1), rn(1)) +
+                          ' [ y[1,0] - %s, y[1,1] - %s, y[1,2] - %s ]]\n' %(rn(1), rn(1), rn(1))))
 
         f = 1 - y
         for i in range(2):
@@ -138,8 +138,8 @@ class TestSubtract(unittest.TestCase):
         self.assertTrue(isinstance(f, optmod.expression.ExpressionMatrix))
         self.assertTrue(np.all(f.get_value() == 1. - np.array(value)))
         self.assertEqual(str(f),
-                         ('[ %s - y[0,0], %s - y[0,1], %s - y[0,2] ]\n' %(rn(1), rn(1), rn(1)) +
-                          '[ %s - y[1,0], %s - y[1,1], %s - y[1,2] ]\n' %(rn(1), rn(1), rn(1))))
+                         ('[[ %s - y[0,0], %s - y[0,1], %s - y[0,2] ],\n' %(rn(1), rn(1), rn(1)) +
+                          ' [ %s - y[1,0], %s - y[1,1], %s - y[1,2] ]]\n' %(rn(1), rn(1), rn(1))))
 
         f = x - y
         self.assertTrue(isinstance(f, optmod.expression.ExpressionMatrix))
@@ -152,8 +152,8 @@ class TestSubtract(unittest.TestCase):
         self.assertTrue(isinstance(f.get_value(), np.matrix))
         self.assertTrue(np.all(f.get_value() == 2. - np.array(value)))
         self.assertEqual(str(f),
-                         ('[ x - y[0,0], x - y[0,1], x - y[0,2] ]\n' +
-                          '[ x - y[1,0], x - y[1,1], x - y[1,2] ]\n'))
+                         ('[[ x - y[0,0], x - y[0,1], x - y[0,2] ],\n' +
+                          ' [ x - y[1,0], x - y[1,1], x - y[1,2] ]]\n'))
 
         f = y - x
         self.assertTrue(isinstance(f, optmod.expression.ExpressionMatrix))
@@ -166,8 +166,8 @@ class TestSubtract(unittest.TestCase):
         self.assertTrue(isinstance(f.get_value(), np.matrix))
         self.assertTrue(np.all(f.get_value() == np.array(value) - 2.))
         self.assertEqual(str(f),
-                         ('[ y[0,0] - x, y[0,1] - x, y[0,2] - x ]\n' +
-                          '[ y[1,0] - x, y[1,1] - x, y[1,2] - x ]\n'))
+                         ('[[ y[0,0] - x, y[0,1] - x, y[0,2] - x ],\n' +
+                          ' [ y[1,0] - x, y[1,1] - x, y[1,2] - x ]]\n'))
 
         f = (y - 1) - (3 - x)
         self.assertTrue(isinstance(f, optmod.expression.ExpressionMatrix))

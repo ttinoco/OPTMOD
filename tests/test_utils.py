@@ -30,15 +30,15 @@ class TestUtils(unittest.TestCase):
         f = optmod.sum(y, axis=0)
         self.assertTrue(isinstance(f, optmod.expression.ExpressionMatrix))
         self.assertTupleEqual(f.shape, (1,2))
-        self.assertEqual(str(f), ('[ y[0,0] + y[1,0] + y[2,0],' +
-                                  ' y[0,1] + y[1,1] + y[2,1] ]\n'))
+        self.assertEqual(str(f), ('[[ y[0,0] + y[1,0] + y[2,0],' +
+                                  ' y[0,1] + y[1,1] + y[2,1] ]]\n'))
 
         # matrix axis
         f = optmod.sum(y, axis=1)
         self.assertTrue(isinstance(f, optmod.expression.ExpressionMatrix))
         self.assertTupleEqual(f.shape, (3,1))
-        self.assertEqual(str(f), ('[ y[0,0] + y[0,1] ]\n' +
-                                  '[ y[1,0] + y[1,1] ]\n' +
-                                  '[ y[2,0] + y[2,1] ]\n'))
+        self.assertEqual(str(f), ('[[ y[0,0] + y[0,1] ],\n' +
+                                  ' [ y[1,0] + y[1,1] ],\n' +
+                                  ' [ y[2,0] + y[2,1] ]]\n'))
         
         self.assertRaises(np.core._internal.AxisError, optmod.sum, x, 2)
