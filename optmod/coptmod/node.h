@@ -8,6 +8,7 @@
  */
 
 #include <stdlib.h>
+#include "uthash.h"
 
 typedef struct Node Node;
 
@@ -25,3 +26,15 @@ typedef enum {
 
 
 Node* NODE_array_new(int num);
+Node* NODE_array_get(Node* n, int i);
+void NODE_array_del(Node* n, int num);
+Node* NODE_hash_add(Node* hash, Node* n);
+Node* NODE_hash_find(Node* hash, long id);
+void NODE_hash_del(Node* hash);
+void NODE_init(Node* n);
+void NODE_set_type(Node* n, NodeType type);
+void NODE_set_id(Node* n, long id);
+void NODE_set_value(Node* n, double value);
+void NODE_set_arg1(Node* n, Node* arg1);
+void NODE_set_arg2(Node* n, Node* arg2);
+void NODE_set_args(Node* n, Node** args, int num);
