@@ -1,3 +1,6 @@
+# Cython
+coptmod.c
+
 # Compiled Object files
 *.slo
 *.lo

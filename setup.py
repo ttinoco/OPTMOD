@@ -4,9 +4,19 @@
 # Copyright (c) 2019, Tomas Tinoco De Rubira.        #
 #                                                    #
 # OPTMOD is released under the BSD 2-clause license. #
-#*******#********************************************#
+#****************************************************#
 
-from setuptools import setup
+from Cython.Build import cythonize
+from setuptools import setup, Extension
+
+ext_modules = cythonize([Extension(name='optmod.coptmod.coptmod',
+                                   sources=['./optmod/coptmod/coptmod.pyx',
+                                            './optmod/coptmod/manager.c',
+                                            './optmod/coptmod/node.c'],
+                                   libraries=[],
+                                   include_dirs=['./optmod/coptmod'],
+                                   library_dirs=[],
+                                   extra_link_args=[])])
 
 setup(name='OPTMOD',
       zip_safe=False,
@@ -28,5 +38,6 @@ setup(name='OPTMOD',
       classifiers=['Development Status :: 5 - Production/Stable',
                    'License :: OSI Approved :: BSD License',
                    'Programming Language :: Python :: 2.7',
-                   'Programming Language :: Python :: 3.5'])
+                   'Programming Language :: Python :: 3.5'],
+      ext_modules=ext_modules)
                                        
