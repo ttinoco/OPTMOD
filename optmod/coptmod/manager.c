@@ -12,8 +12,7 @@
 struct Manager {
 
   int max_nodes;
-  int num_nodes;
-  
+  int num_nodes;  
   Node* nodes;
   Node* hash;
 };
@@ -29,8 +28,14 @@ Manager* MANAGER_new(int max_nodes) {
 
 void MANAGER_inc_num_nodes(Manager* m) {
 
-  // increment number of nodes
-  // dynamically reallcate larger array and updates pointers and hash tables
+  if (!m)
+    return;
+
+  m->num_nodes += 1;
+  
+  if (m->num_nodes >= m->max_nodes) {
+    // DO SOMETHING
+  }
 }
 
 void MANAGER_add_node(Manager* m, NodeType type, long id, double value, long* arg_ids, int num_args) {
@@ -66,7 +71,7 @@ void MANAGER_add_node(Manager* m, NodeType type, long id, double value, long* ar
     }
     args[i] = arg;
   }
-
+  
   if (num_args <= 2) {
     NODE_set_arg1(n, args[0]);
     if (num_args > 1)
@@ -82,5 +87,24 @@ void MANAGER_del(Manager* m) {
     NODE_hash_del(m->hash);
     NODE_array_del(m->nodes, m->max_nodes);
     free(m);
+  }
+}
+
+void MANAGER_show(Manager* m) {
+
+  int i;
+
+  if (!m)
+    return;
+
+  printf("\n");
+  printf("Manager\n");
+  printf("max_nodes: %d\n", m->max_nodes);
+  printf("num_nodes: %d\n", m->num_nodes);
+  printf("nodes:\n\n");
+
+  for (i = 0; i < m->num_nodes; m++) {
+    NODE_show(NODE_array_get(m->nodes, i));
+    printf("\n");
   }
 }

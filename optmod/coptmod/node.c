@@ -11,6 +11,7 @@
 
 struct Node {
   NodeType type;
+  char type_name[NODE_BUFFER_SIZE];
   long id;
   double value;
   Node* arg1;
@@ -19,6 +20,52 @@ struct Node {
   int num_args;
   UT_hash_handle hh;
 };
+
+long NODE_get_id(Node* n) {
+  if (n)
+    return n->id;
+  else
+    return 0;
+}
+
+char* NODE_get_type_name(Node* n) {
+  if (n) {
+    switch (n->type) {
+    case NODE_TYPE_UNKNOWN:
+      strcpy(n->type_name, "unknown");
+      break;
+    case NODE_TYPE_CONSTANT:
+      strcpy(n->type_name, "constant");
+      break;
+    case NODE_TYPE_VARIABLE:
+      strcpy(n->type_name, "variable");
+      break;
+    case NODE_TYPE_ADD:
+      strcpy(n->type_name, "add");
+      break;
+    case NODE_TYPE_SUBTRACT:
+      strcpy(n->type_name, "subtract");
+      break;
+    case NODE_TYPE_NEGATE:
+      strcpy(n->type_name, "negate");
+      break;
+    case NODE_TYPE_MULTIPLY:
+      strcpy(n->type_name, "multiply");
+      break;
+    case NODE_TYPE_SIN:
+      strcpy(n->type_name, "sin");
+      break;
+    case NODE_TYPE_COS:
+      strcpy(n->type_name, "cos");
+      break;
+    default:
+      strcpy(n->type_name, "error");
+    }
+    return n->type_name;
+  }
+  else
+    return NULL;
+}
 
 Node* NODE_hash_add(Node* hash, Node* n) {
   HASH_ADD(hh,hash,id,sizeof(long),n);
@@ -101,3 +148,18 @@ void NODE_set_args(Node* n, Node** args, int num) {
   }
 }
 
+void NODE_show(Node* n) {
+  int i;
+  if (n) {
+    printf("Node\n");
+    printf("type: %s\n", NODE_get_type_name(n));
+    printf("id: %ld\n", n->id);
+    printf("value: %.4e\n", n->value);
+    printf("arg1 id: %ld\n", NODE_get_id(n->arg1));
+    printf("arg2 id: %ld\n", NODE_get_id(n->arg2));
+    printf("num args: %d\n", n->num_args );
+    for (i = 0; i < n->num_args; i++)
+      printf("%ld ", NODE_get_id(n->args[i]));
+    printf("\n");
+  }
+}

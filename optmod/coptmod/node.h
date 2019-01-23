@@ -7,8 +7,14 @@
  * OPTMOD is released under the BSD 2-clause license.
  */
 
+#ifndef __NODE_HEADER__
+#define __NODE_HEADER__
+
+#include <stdio.h>
 #include <stdlib.h>
 #include "uthash.h"
+
+#define NODE_BUFFER_SIZE 100
 
 typedef struct Node Node;
 
@@ -38,3 +44,6 @@ void NODE_set_value(Node* n, double value);
 void NODE_set_arg1(Node* n, Node* arg1);
 void NODE_set_arg2(Node* n, Node* arg2);
 void NODE_set_args(Node* n, Node** args, int num);
+void NODE_show(Node* n);
+
+#endif

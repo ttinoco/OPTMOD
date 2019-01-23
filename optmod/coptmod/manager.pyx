@@ -16,3 +16,11 @@ cdef class Manager:
 
         manager.MANAGER_del(self._ptr)
         self._ptr = NULL
+
+    def add_node(self, type, id, value, arg_ids):
+
+        pass
+        
+    def show(self):
+
+        manager.MANAGER_show(self._ptr)
