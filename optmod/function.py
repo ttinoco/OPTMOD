@@ -1,5 +1,6 @@
 import numpy as np
 import networkx as nx
+from . import coptmod
 from .constant import Constant
 from .variable import VariableScalar
 from .expression import Expression, ExpressionMatrix, make_Expression
@@ -36,6 +37,16 @@ class Function(Expression):
     def __partial__(self, arg):
 
         return NotImplemented
+    
+    def __fill_manager__(self, manager):
+
+        manager.add_node(self.__manager_node_type__(),
+                         id(self),
+                         0.,
+                         [id(arg) for arg in self.arguments])
+
+        for arg in self.arguments:
+            arg.__fill_manager__(manager)
 
     def get_derivative(self, var, G=None):
 
@@ -133,6 +144,10 @@ class add(Function):
                 'a': new_a,
                 'b': prop1['b'] + prop2['b']}
 
+    def __manager_node_type__(self):
+            
+        return coptmod.NODE_TYPE_ADD
+
     def get_value(self):
         
         return np.sum(list(map(lambda a: a.get_value(), self.arguments)))
@@ -187,6 +202,10 @@ class subtract(Function):
         return {'affine': prop1['affine'] and prop2['affine'],
                 'a': new_a,
                 'b': prop1['b'] - prop2['b']}
+
+    def __manager_node_type__(self):
+            
+        return coptmod.NODE_TYPE_SUBTRACT
         
     def get_value(self):
         
@@ -245,6 +264,10 @@ class multiply(Function):
                 'a': new_a,
                 'b': prop1['b']*prop2['b']}
 
+    def __manager_node_type__(self):
+    
+        return coptmod.NODE_TYPE_MULTIPLY
+
     def get_value(self):
 
         return np.prod([a.get_value() for a in self.arguments])
@@ -299,6 +322,10 @@ class negate(ElementWiseFunction):
         return {'affine': prop['affine'],
                 'a': new_a,
                 'b': -prop['b']}
+
+    def __manager_node_type__(self):
+            
+        return coptmod.NODE_TYPE_NEGATE
         
     def get_value(self):
 
@@ -327,6 +354,10 @@ class sin(ElementWiseFunction):
 
         else:
             raise ValueError('invalid argument')
+
+    def __manager_node_type__(self):
+            
+        return coptmod.NODE_TYPE_SIN
         
     def get_value(self):
 
@@ -355,6 +386,10 @@ class cos(ElementWiseFunction):
 
         else:
             raise ValueError('invalid argument')
+
+    def __manager_node_type__(self):
+            
+        return coptmod.NODE_TYPE_COS
 
     def get_value(self):
 

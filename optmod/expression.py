@@ -219,6 +219,14 @@ class Expression(object):
                 'Hphi_list': Hphi_list,
                 'phi_prop': prop}
 
+    def __manager_node_type__(self):
+
+        return NotImplemented
+
+    def __fill_manager__(self, manager):
+
+        raise NotImplementedError
+
     def get_derivative(self, var, G=None):
 
         return make_Expression(0.)

@@ -1,4 +1,5 @@
 import numpy as np
+from . import coptmod
 from .expression import Expression, ExpressionMatrix, make_Expression
 
 class VariableScalar(Expression):
@@ -17,6 +18,17 @@ class VariableScalar(Expression):
     def __node__(self, prefix):
 
         return ('', id(self))
+
+    def __manager_node_type__(self):
+
+        return coptmod.NODE_TYPE_VARIABLE
+
+    def __fill_manager__(self, manager):
+
+        manager.add_node(self.__manager_node_type__(),
+                         id(self),
+                         self.value,
+                         [])
 
     def __analyze__(self, G, prefix):
 

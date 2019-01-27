@@ -16,29 +16,28 @@
 
 #define NODE_BUFFER_SIZE 100
 
+#define NODE_TYPE_UNKNOWN 0
+#define NODE_TYPE_CONSTANT 1
+#define NODE_TYPE_VARIABLE 2
+#define NODE_TYPE_ADD 3
+#define NODE_TYPE_SUBTRACT 4
+#define NODE_TYPE_NEGATE 5
+#define NODE_TYPE_MULTIPLY 6
+#define NODE_TYPE_SIN 7
+#define NODE_TYPE_COS 8
+
 typedef struct Node Node;
-
-typedef enum {
-  NODE_TYPE_UNKNOWN,
-  NODE_TYPE_CONSTANT,
-  NODE_TYPE_VARIABLE,
-  NODE_TYPE_ADD,
-  NODE_TYPE_SUBTRACT,
-  NODE_TYPE_NEGATE,
-  NODE_TYPE_MULTIPLY,
-  NODE_TYPE_SIN,
-  NODE_TYPE_COS
-} NodeType;
-
 
 Node* NODE_array_new(int num);
 Node* NODE_array_get(Node* n, int i);
 void NODE_array_del(Node* n, int num);
+void NODE_copy_from_node(Node* n, Node* other, Node* hash);
+long NODE_get_id(Node* n);
 Node* NODE_hash_add(Node* hash, Node* n);
 Node* NODE_hash_find(Node* hash, long id);
 void NODE_hash_del(Node* hash);
 void NODE_init(Node* n);
-void NODE_set_type(Node* n, NodeType type);
+void NODE_set_type(Node* n, int type);
 void NODE_set_id(Node* n, long id);
 void NODE_set_value(Node* n, double value);
 void NODE_set_arg1(Node* n, Node* arg1);

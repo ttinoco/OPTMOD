@@ -10,7 +10,7 @@
 #include "node.h"
 
 struct Node {
-  NodeType type;
+  int type;
   char type_name[NODE_BUFFER_SIZE];
   long id;
   double value;
@@ -20,6 +20,30 @@ struct Node {
   int num_args;
   UT_hash_handle hh;
 };
+
+void NODE_copy_from_node(Node* n, Node* other, Node* hash) {
+
+  int i;
+  Node** args;
+
+  if (!n || !other)
+    return;
+
+  n->type = other->type;
+  strcpy(n->type_name, other->type_name);
+  n->id = other->id;
+  n->value = other->value;
+  if (other->arg1)
+    n->arg1 = NODE_hash_find(hash, other->arg1->id);
+  if (other->arg2)
+    n->arg2 = NODE_hash_find(hash, other->arg2->id);
+  if (other->num_args > 0) {
+    args = (Node**)malloc(sizeof(Node*)*other->num_args);
+    for (i = 0; i < other->num_args; i++)
+      args[i] = NODE_hash_find(hash, other->args[i]->id);
+    NODE_set_args(n, args, other->num_args);
+  }
+}
 
 long NODE_get_id(Node* n) {
   if (n)
@@ -99,12 +123,16 @@ Node* NODE_array_get(Node* n, int i) {
 }
 
 void NODE_array_del(Node* n, int num) {
-  
+  int i;
+  for (i = 0; i < num; i++)
+    free((n+i)->args);
+  free(n);
 }
 
 void NODE_init(Node* n) {
   if (n) {
     n->type = NODE_TYPE_UNKNOWN;
+    strcpy(n->type_name, "");
     n->id = 0;
     n->value = 0;
     n->arg1 = NULL;
@@ -114,7 +142,7 @@ void NODE_init(Node* n) {
   }
 }
 
-void NODE_set_type(Node* n, NodeType type) {
+void NODE_set_type(Node* n, int type) {
   if (n)
     n->type = type;
 }

@@ -6,6 +6,7 @@
 # OPTMOD is released under the BSD 2-clause license. #
 #****************************************************#
 
+import numpy as np
 from Cython.Build import cythonize
 from setuptools import setup, Extension
 
@@ -14,7 +15,7 @@ ext_modules = cythonize([Extension(name='optmod.coptmod.coptmod',
                                             './optmod/coptmod/manager.c',
                                             './optmod/coptmod/node.c'],
                                    libraries=[],
-                                   include_dirs=['./optmod/coptmod'],
+                                   include_dirs=[np.get_include(), './optmod/coptmod'],
                                    library_dirs=[],
                                    extra_link_args=[])])
 

@@ -1,12 +1,11 @@
 cdef extern from "node.h":
 
-    ctypedef enum NodeType:
-        NODE_TYPE_UNKNOWN,
-        NODE_TYPE_CONSTANT,
-        NODE_TYPE_VARIABLE,
-        NODE_TYPE_ADD,
-        NODE_TYPE_SUBTRACT,
-        NODE_TYPE_NEGATE,
-        NODE_TYPE_MULTIPLY,
-        NODE_TYPE_SIN,
-        NODE_TYPE_COS
+    cdef int NODE_TYPE_UNKNOWN
+    cdef int NODE_TYPE_CONSTANT
+    cdef int NODE_TYPE_VARIABLE
+    cdef int NODE_TYPE_ADD
+    cdef int NODE_TYPE_SUBTRACT
+    cdef int NODE_TYPE_NEGATE
+    cdef int NODE_TYPE_MULTIPLY
+    cdef int NODE_TYPE_SIN
+    cdef int NODE_TYPE_COS
