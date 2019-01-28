@@ -19,10 +19,26 @@ struct Evaluator {
   Node** inputs;
   
   int num_outputs;
-  double* outputs;
+  Node** outputs;
+  double* values;
   
   Node* hash;
 };
+
+void EVALUATOR_eval(Evaluator* e, double* var_values) {
+
+  int i;
+  
+  if (!e)
+    return;
+
+  for (i = 0; i < e->num_inputs; i++)
+    NODE_set_value(e->inputs[i], var_values[i]);
+
+  for (i = 0; i < e->num_outputs; i++)
+    e->values[i] = NODE_get_value(e->outputs[i]);
+
+}
 
 int EVALUATOR_get_max_nodes(Evaluator* e) {
   if (e)
@@ -52,6 +68,13 @@ int EVALUATOR_get_num_outputs(Evaluator* e) {
     return 0;
 }
 
+double* EVALUATOR_get_values(Evaluator* e) {
+  if (e)
+    return e->values;
+  else
+    return NULL;
+}
+
 Evaluator* EVALUATOR_new(int num_inputs, int num_outputs) {
   int i;
   Evaluator* e = (Evaluator*)malloc(sizeof(Evaluator));  
@@ -61,12 +84,15 @@ Evaluator* EVALUATOR_new(int num_inputs, int num_outputs) {
   e->num_inputs = num_inputs;
   e->num_outputs = num_outputs;
   e->inputs = (Node**)malloc(sizeof(Node*)*num_inputs);
-  e->outputs = (double*)malloc(sizeof(double)*num_outputs);
+  e->outputs = (Node**)malloc(sizeof(Node*)*num_outputs);
+  e->values = (double*)malloc(sizeof(double)*num_outputs);
   e->hash = NULL;
   for (i = 0; i < e->num_inputs; i++)
     e->inputs[i] = NULL;
-  for (i = 0; i < e->num_outputs; i++)
-    e->outputs[i] = 0.;
+  for (i = 0; i < e->num_outputs; i++) {
+    e->outputs[i] = NULL;
+    e->values[i] = 0.;
+  }
   return e;
 }
 
@@ -118,6 +144,10 @@ void EVALUATOR_inc_num_nodes(Evaluator* e) {
     for (i = 0; i < e->num_inputs; i++)
       e->inputs[i] = NODE_hash_find(e->hash, NODE_get_id(e->inputs[i]));
 
+    // Update outputs
+    for (i = 0; i < e->num_outputs; i++)
+      e->outputs[i] = NODE_hash_find(e->hash, NODE_get_id(e->outputs[i]));
+    
     // Update nodes
     NODE_array_del(e->nodes, e->num_nodes);
     e->nodes = new_nodes;
@@ -131,42 +161,65 @@ void EVALUATOR_add_node(Evaluator* e, int type, long id, double value, long* arg
   Node* n;
   Node* arg;
   Node** args;
+  int n_index;
+  int* args_index;
   
   if (!e)
     return;
   
-  // Root
-  n = NODE_hash_find(e->hash, id);  
+  n = NODE_hash_find(e->hash, id);
   if (!n) {
-    n = NODE_array_get(e->nodes, e->num_nodes);
+    n_index = e->num_nodes;
+    n = NODE_array_get(e->nodes, n_index);
     NODE_set_id(n, id);
     e->hash = NODE_hash_add(e->hash, n);
     EVALUATOR_inc_num_nodes(e);
   }
-  NODE_set_type(n, type);
-  NODE_set_value(n, value);
+  else
+    n_index = NODE_get_index(n);
   
-  // args
-  args = (Node**)malloc(sizeof(Node*)*num_args);
+  if (num_args > 0) {
+    args = (Node**)malloc(sizeof(Node*)*num_args);
+    args_index = (int*)malloc(sizeof(int)*num_args);
+  }
+  else {
+    args = NULL;
+    args_index = NULL;
+  }
+
   for (i = 0; i < num_args; i++) {
     arg = NODE_hash_find(e->hash, arg_ids[i]);
     if (!arg) {
-      arg = NODE_array_get(e->nodes, e->num_nodes);
+      args_index[i] = e->num_nodes;
+      arg = NODE_array_get(e->nodes, args_index[i]);
       NODE_set_id(arg, arg_ids[i]);
       e->hash = NODE_hash_add(e->hash, arg);
       EVALUATOR_inc_num_nodes(e);
     }
-    args[i] = arg;
+    else
+      args_index[i] = NODE_get_index(arg);
   }
   
-  if (num_args <= 2) {
-    NODE_set_arg1(n, args[0]);
+  // Root
+  n = NODE_array_get(e->nodes, n_index);
+  NODE_set_type(n, type);
+  NODE_set_value(n, value);
+  
+  // Args
+  if (0 < num_args && num_args <= 2) {
+    NODE_set_arg1(n, NODE_array_get(e->nodes, args_index[0]));
     if (num_args > 1)
-      NODE_set_arg2(n, args[1]);
-    free(args);
+      NODE_set_arg2(n, NODE_array_get(e->nodes, args_index[1]));
+    if (args)
+      free(args);
   }
-  else
+  else {
+    for (i = 0; i < num_args; i++)
+      args[i] = NODE_array_get(e->nodes, args_index[i]);
     NODE_set_args(n, args, num_args);
+  }
+  if (args_index)
+    free(args_index);
 }
 
 void EVALUATOR_del(Evaluator* e) {
@@ -175,6 +228,7 @@ void EVALUATOR_del(Evaluator* e) {
     NODE_array_del(e->nodes, e->num_nodes);
     free(e->inputs);
     free(e->outputs);
+    free(e->values);
     free(e);
   }
 }
@@ -188,7 +242,7 @@ void EVALUATOR_set_output_node(Evaluator* e, int index, long id) {
 
   n = NODE_hash_find(e->hash, id);
   if (0 <= index && 0 < e->num_outputs)
-    NODE_set_output_index(n, index);
+    e->outputs[index] = n;
 }
 
 void EVALUATOR_set_input_var(Evaluator* e, int index, long id) {
@@ -224,7 +278,12 @@ void EVALUATOR_show(Evaluator* e) {
 
   printf("outputs:\n");
   for (i = 0; i < e->num_outputs; i++)
-    printf("%.2e, ", e->outputs[i]);
+    printf("%ld, ", NODE_get_id(e->outputs[i]));
+  printf("\n\n");
+
+  printf("values:\n");
+  for (i = 0; i < e->num_outputs; i++)
+    printf("%.2e, ", e->values[i]);
   printf("\n\n");
   
   printf("nodes:\n\n");

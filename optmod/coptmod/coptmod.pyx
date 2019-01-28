@@ -3,6 +3,12 @@ cimport numpy as np
 
 cimport node
 
+np.import_array()
+
+cdef extern from "numpy/arrayobject.h":
+    void PyArray_ENABLEFLAGS(np.ndarray arr, int flags)
+    void PyArray_CLEARFLAGS(np.ndarray arr, int flags)
+
 include "evaluator.pyx"
 
 NODE_TYPE_UNKNOWN = node.NODE_TYPE_UNKNOWN

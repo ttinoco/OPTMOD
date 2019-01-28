@@ -10,6 +10,7 @@
 #include "node.h"
 
 struct Node {
+  int index;
   int type;
   char type_name[NODE_BUFFER_SIZE];
   long id;
@@ -18,7 +19,6 @@ struct Node {
   Node* arg2;
   Node** args;
   int num_args;
-  int output_index;
   UT_hash_handle hh;
 };
 
@@ -44,7 +44,6 @@ void NODE_copy_from_node(Node* n, Node* other, Node* hash) {
       args[i] = NODE_hash_find(hash, other->args[i]->id);
     NODE_set_args(n, args, other->num_args);
   }
-  n->output_index = other->output_index;
 }
 
 long NODE_get_id(Node* n) {
@@ -101,6 +100,36 @@ char* NODE_get_type_name(Node* n) {
     return NULL;
 }
 
+double NODE_get_value(Node* n) {
+
+  if (!n)
+    return 0;
+  
+  switch (n->type) {
+    
+  case NODE_TYPE_UNKNOWN:
+    return 0;
+  case NODE_TYPE_CONSTANT:
+    return n->value;
+  case NODE_TYPE_VARIABLE:
+    return n->value;
+  case NODE_TYPE_ADD:
+    return NODE_get_value(n->arg1) + NODE_get_value(n->arg2);
+  case NODE_TYPE_SUBTRACT:
+    return NODE_get_value(n->arg1) - NODE_get_value(n->arg2);
+  case NODE_TYPE_NEGATE:
+    return -NODE_get_value(n->arg1);
+  case NODE_TYPE_MULTIPLY:
+    return NODE_get_value(n->arg1)*NODE_get_value(n->arg2);
+  case NODE_TYPE_SIN:
+    return sin(NODE_get_value(n->arg1));
+  case NODE_TYPE_COS:
+    return cos(NODE_get_value(n->arg1));
+  default:
+    return 0;
+  }
+}
+
 Node* NODE_hash_add(Node* hash, Node* n) {
   HASH_ADD(hh,hash,id,sizeof(long),n);
   return hash;
@@ -120,9 +149,18 @@ void NODE_hash_del(Node* hash) {
 Node* NODE_array_new(int num) {
   int i;
   Node* n = (Node*)malloc(sizeof(Node)*num);
-  for (i = 0; i < num; i++)
+  for (i = 0; i < num; i++) {
     NODE_init(n+i);
+    (n+i)->index = i;
+  }
   return n;
+}
+
+int NODE_get_index(Node* n) {
+  if (n)
+    return n->index;
+  else
+    return -1;
 }
 
 Node* NODE_array_get(Node* n, int i) {
@@ -134,13 +172,16 @@ Node* NODE_array_get(Node* n, int i) {
 
 void NODE_array_del(Node* n, int num) {
   int i;
-  for (i = 0; i < num; i++)
-    free((n+i)->args);
+  for (i = 0; i < num; i++) {
+    if ((n+i)->args && (n+i)->num_args > 0)
+      free((n+i)->args);
+  }
   free(n);
 }
 
 void NODE_init(Node* n) {
   if (n) {
+    n->index = 0;
     n->type = NODE_TYPE_UNKNOWN;
     strcpy(n->type_name, "");
     n->id = 0;
@@ -149,7 +190,6 @@ void NODE_init(Node* n) {
     n->arg2 = NULL;
     n->args = NULL;
     n->num_args = 0;
-    n->output_index = -1;
   }
 }
 
@@ -187,11 +227,6 @@ void NODE_set_args(Node* n, Node** args, int num) {
   }
 }
 
-void NODE_set_output_index(Node* n, int index) {
-  if (n)
-    n->output_index = index;
-}
-
 void NODE_show(Node* n) {
   int i;
   if (n) {
@@ -199,7 +234,6 @@ void NODE_show(Node* n) {
     printf("type: %s\n", NODE_get_type_name(n));
     printf("id: %ld\n", n->id);
     printf("value: %.4e\n", n->value);
-    printf("output index: %d\n", n->output_index);
     printf("arg1 id: %ld\n", NODE_get_id(n->arg1));
     printf("arg2 id: %ld\n", NODE_get_id(n->arg2));
     printf("num args: %d\n", n->num_args );

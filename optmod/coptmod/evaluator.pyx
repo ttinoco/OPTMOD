@@ -19,16 +19,30 @@ cdef class Evaluator:
 
     def add_node(self, type, id, value, arg_ids):
 
-        cdef np.ndarray[long,mode='c'] x = np.array(arg_ids, dtype=long)
+        cdef np.ndarray[long, mode='c'] x = np.array(arg_ids, dtype=long)
         evaluator.EVALUATOR_add_node(self._ptr, type, id, value, <long*>(x.data), x.size)
 
     def get_value(self):
+        
+        cdef np.npy_intp shape[1]
+        shape[0] = <np.npy_intp>(self.num_outputs)
+        
+        arr = np.PyArray_SimpleNewFromData(1,
+                                           shape,
+                                           np.NPY_DOUBLE,
+                                           evaluator.EVALUATOR_get_values(self._ptr))
+        
+        PyArray_CLEARFLAGS(arr, np.NPY_OWNDATA)
+        return np.asmatrix(arr)
 
-        pass
+    def eval(self, var_values):
 
-    def eval(self, x):
+        cdef np.ndarray[double, mode='c'] x = np.array(var_values, dtype=float)
 
-        pass
+        assert(x.ndum == 1)
+        assert(x.size == self.num_inputs)
+        
+        evaluator.EVALUATOR_eval(self._ptr, <double*>(x.data))
 
     def set_output_node(self, i, id):
 

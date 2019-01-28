@@ -62,3 +62,34 @@ class TestCoptmod(unittest.TestCase):
         self.assertEqual(E.num_nodes, 9)
         self.assertEqual(E.num_inputs, 2)
         self.assertEqual(E.num_outputs, 5)
+
+    def test_evaluator_eval(self):
+
+        x = optmod.Variable(name='x', value=3.)
+        y = optmod.Variable(name='y', value=4.)
+
+        # var
+        f = x
+        e = optmod.coptmod.Evaluator(1, 1)
+        f.__fill_evaluator__(e)
+        e.set_input_var(0, id(x))
+        e.set_output_node(0, id(f))
+        self.assertEqual(e.get_value(), 0.)
+        e.eval([5.])
+        self.assertEqual(e.get_value().ndim, 2)
+        self.assertTupleEqual(e.get_value().shape, (1,1))
+        self.assertEqual(e.get_value()[0,0], 5.)
+        
+        # constant
+
+        # add
+
+        # sub
+
+        # negate
+
+        # multiply
+
+        # sin
+
+        # cos
