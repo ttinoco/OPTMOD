@@ -19,16 +19,16 @@ class VariableScalar(Expression):
 
         return ('', id(self))
 
-    def __manager_node_type__(self):
+    def __evaluator_node_type__(self):
 
         return coptmod.NODE_TYPE_VARIABLE
 
-    def __fill_manager__(self, manager):
+    def __fill_evaluator__(self, evaluator):
 
-        manager.add_node(self.__manager_node_type__(),
-                         id(self),
-                         self.value,
-                         [])
+        evaluator.add_node(self.__evaluator_node_type__(),
+                           id(self),
+                           self.value,
+                           [])
 
     def __analyze__(self, G, prefix):
 

@@ -3,7 +3,7 @@ cimport numpy as np
 
 cimport node
 
-include "manager.pyx"
+include "evaluator.pyx"
 
 NODE_TYPE_UNKNOWN = node.NODE_TYPE_UNKNOWN
 NODE_TYPE_CONSTANT = node.NODE_TYPE_CONSTANT

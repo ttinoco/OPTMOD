@@ -38,15 +38,15 @@ class Function(Expression):
 
         return NotImplemented
     
-    def __fill_manager__(self, manager):
+    def __fill_evaluator__(self, evaluator):
 
-        manager.add_node(self.__manager_node_type__(),
-                         id(self),
-                         0.,
-                         [id(arg) for arg in self.arguments])
+        evaluator.add_node(self.__evaluator_node_type__(),
+                           id(self),
+                           0.,
+                           [id(arg) for arg in self.arguments])
 
         for arg in self.arguments:
-            arg.__fill_manager__(manager)
+            arg.__fill_evaluator__(evaluator)
 
     def get_derivative(self, var, G=None):
 
@@ -144,7 +144,7 @@ class add(Function):
                 'a': new_a,
                 'b': prop1['b'] + prop2['b']}
 
-    def __manager_node_type__(self):
+    def __evaluator_node_type__(self):
             
         return coptmod.NODE_TYPE_ADD
 
@@ -203,7 +203,7 @@ class subtract(Function):
                 'a': new_a,
                 'b': prop1['b'] - prop2['b']}
 
-    def __manager_node_type__(self):
+    def __evaluator_node_type__(self):
             
         return coptmod.NODE_TYPE_SUBTRACT
         
@@ -264,7 +264,7 @@ class multiply(Function):
                 'a': new_a,
                 'b': prop1['b']*prop2['b']}
 
-    def __manager_node_type__(self):
+    def __evaluator_node_type__(self):
     
         return coptmod.NODE_TYPE_MULTIPLY
 
@@ -323,7 +323,7 @@ class negate(ElementWiseFunction):
                 'a': new_a,
                 'b': -prop['b']}
 
-    def __manager_node_type__(self):
+    def __evaluator_node_type__(self):
             
         return coptmod.NODE_TYPE_NEGATE
         
@@ -355,7 +355,7 @@ class sin(ElementWiseFunction):
         else:
             raise ValueError('invalid argument')
 
-    def __manager_node_type__(self):
+    def __evaluator_node_type__(self):
             
         return coptmod.NODE_TYPE_SIN
         
@@ -387,7 +387,7 @@ class cos(ElementWiseFunction):
         else:
             raise ValueError('invalid argument')
 
-    def __manager_node_type__(self):
+    def __evaluator_node_type__(self):
             
         return coptmod.NODE_TYPE_COS
 

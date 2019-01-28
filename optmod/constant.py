@@ -29,16 +29,16 @@ class Constant(Expression):
                 'a': {}, 
                 'b': self.value}
 
-    def __manager_node_type__(self):
+    def __evaluator_node_type__(self):
 
         return coptmod.NODE_TYPE_CONSTANT
 
-    def __fill_manager__(self, manager):
+    def __fill_evaluator__(self, evaluator):
 
-        manager.add_node(self.__manager_node_type__(),
-                         id(self),
-                         self.value,
-                         [])
+        evaluator.add_node(self.__evaluator_node_type__(),
+                           id(self),
+                           self.value,
+                           [])
 
     def get_value(self):
 

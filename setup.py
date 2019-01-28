@@ -12,7 +12,7 @@ from setuptools import setup, Extension
 
 ext_modules = cythonize([Extension(name='optmod.coptmod.coptmod',
                                    sources=['./optmod/coptmod/coptmod.pyx',
-                                            './optmod/coptmod/manager.c',
+                                            './optmod/coptmod/evaluator.c',
                                             './optmod/coptmod/node.c'],
                                    libraries=[],
                                    include_dirs=[np.get_include(), './optmod/coptmod'],

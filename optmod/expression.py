@@ -220,11 +220,11 @@ class Expression(object):
                 'Hphi_list': Hphi_list,
                 'phi_prop': prop}
 
-    def __manager_node_type__(self):
+    def __evaluator_node_type__(self):
 
         return NotImplemented
 
-    def __fill_manager__(self, manager):
+    def __fill_evaluator__(self, evaluator):
 
         raise NotImplementedError
 
@@ -406,16 +406,16 @@ class ExpressionMatrix(object):
 
         assert(isinstance(variables, list))
 
-        m = coptmod.Manager(len(variables), self.shape[0]*self.shape[1])
+        e = coptmod.evaluator(len(variables), self.shape[0]*self.shape[1])
         for i, var in enumerate(variables):
-            m.set_input_var(i, id(var))
+            e.set_input_var(i, id(var))
         for i in range(self.shape[0]):
             for j in range(self.shape[1]):
                 x = self.data[i.j]
-                x.__fill_manager__(m)
-                m.set_output_node(i*self.shape[1]+j, id(x))
+                x.__fill_evaluator__(e)
+                e.set_output_node(i*self.shape[1]+j, id(x))
         
-        return m
+        return e
               
 class SparseExpressionMatrix:
 
