@@ -1,5 +1,6 @@
 import numpy as np
 import networkx as nx
+from . import coptmod
 
 class Expression(object):
 
@@ -400,6 +401,21 @@ class ExpressionMatrix(object):
             return np.vectorize(lambda x: x.get_value())(self.data)
         else:
             return np.asmatrix(self.data, dtype=np.float64)
+
+    def get_fast_evaluator(self, variables):
+
+        assert(isinstance(variables, list))
+
+        m = coptmod.Manager(len(variables), self.shape[0]*self.shape[1])
+        for i, var in enumerate(variables):
+            m.set_input_var(i, id(var))
+        for i in range(self.shape[0]):
+            for j in range(self.shape[1]):
+                x = self.data[i.j]
+                x.__fill_manager__(m)
+                m.set_output_node(i*self.shape[1]+j, id(x))
+        
+        return m
               
 class SparseExpressionMatrix:
 

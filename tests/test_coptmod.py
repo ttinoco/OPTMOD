@@ -24,21 +24,25 @@ class TestCoptmod(unittest.TestCase):
                              list(range(9)))
         
     def test_manager_construct(self):
-
+        
         x = optmod.Variable(name='x', value=3.)
         y = optmod.Variable(name='y', value=4.)
 
         f = 4*(x + 1) + optmod.sin(-y)
 
-        m = optmod.coptmod.Manager(20)
+        m = optmod.coptmod.Manager(2, 20)
 
         self.assertEqual(m.max_nodes, 20)
         self.assertEqual(m.num_nodes, 0)
+        self.assertEqual(m.num_inputs, 2)
+        self.assertEqual(m.num_outputs, 20)
 
         f.__fill_manager__(m)
         
         self.assertEqual(m.max_nodes, 20)
         self.assertEqual(m.num_nodes, 9)
+        self.assertEqual(m.num_inputs, 2)
+        self.assertEqual(m.num_outputs, 20)
 
     def test_manager_dynamic_resize(self):
 
@@ -47,13 +51,16 @@ class TestCoptmod(unittest.TestCase):
 
         f = 4*(x + 1) + optmod.sin(-y)
 
-        m = optmod.coptmod.Manager(5)
+        m = optmod.coptmod.Manager(2, 5)
 
         self.assertEqual(m.max_nodes, 5)
         self.assertEqual(m.num_nodes, 0)
+        self.assertEqual(m.num_inputs, 2)
+        self.assertEqual(m.num_outputs, 5)
 
         f.__fill_manager__(m)
         
         self.assertEqual(m.max_nodes, 10)
         self.assertEqual(m.num_nodes, 9)
-        
+        self.assertEqual(m.num_inputs, 2)
+        self.assertEqual(m.num_outputs, 5)

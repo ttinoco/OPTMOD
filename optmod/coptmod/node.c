@@ -18,6 +18,7 @@ struct Node {
   Node* arg2;
   Node** args;
   int num_args;
+  int output_index;
   UT_hash_handle hh;
 };
 
@@ -43,6 +44,7 @@ void NODE_copy_from_node(Node* n, Node* other, Node* hash) {
       args[i] = NODE_hash_find(hash, other->args[i]->id);
     NODE_set_args(n, args, other->num_args);
   }
+  n->output_index = other->output_index;
 }
 
 long NODE_get_id(Node* n) {
@@ -51,6 +53,14 @@ long NODE_get_id(Node* n) {
   else
     return 0;
 }
+
+int NODE_get_type(Node* n) {
+  if (n)
+    return n->type;
+  else
+    return NODE_TYPE_UNKNOWN;
+}
+
 
 char* NODE_get_type_name(Node* n) {
   if (n) {
@@ -139,6 +149,7 @@ void NODE_init(Node* n) {
     n->arg2 = NULL;
     n->args = NULL;
     n->num_args = 0;
+    n->output_index = -1;
   }
 }
 
@@ -176,6 +187,11 @@ void NODE_set_args(Node* n, Node** args, int num) {
   }
 }
 
+void NODE_set_output_index(Node* n, int index) {
+  if (n)
+    n->output_index = index;
+}
+
 void NODE_show(Node* n) {
   int i;
   if (n) {
@@ -183,6 +199,7 @@ void NODE_show(Node* n) {
     printf("type: %s\n", NODE_get_type_name(n));
     printf("id: %ld\n", n->id);
     printf("value: %.4e\n", n->value);
+    printf("output index: %d\n", n->output_index);
     printf("arg1 id: %ld\n", NODE_get_id(n->arg1));
     printf("arg2 id: %ld\n", NODE_get_id(n->arg2));
     printf("num args: %d\n", n->num_args );
