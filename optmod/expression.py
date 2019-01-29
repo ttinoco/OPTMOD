@@ -1,6 +1,7 @@
 import numpy as np
 import networkx as nx
 from . import coptmod
+from functools import reduce
 
 class Expression(object):
 

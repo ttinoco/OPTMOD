@@ -1,6 +1,7 @@
 import numpy as np
 import networkx as nx
 from . import coptmod
+from functools import reduce
 from .constant import Constant
 from .variable import VariableScalar
 from .expression import Expression, ExpressionMatrix, make_Expression
