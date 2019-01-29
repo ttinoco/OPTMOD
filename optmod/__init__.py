@@ -4,6 +4,7 @@ from . import variable
 from . import constraint
 from . import function
 from . import problem
+from . import coptmod
 
 from .variable import Variable
 from .function import sin, cos

@@ -6,7 +6,7 @@
 
 Experimental optimization modeling layer for OPTALG with automatic sparse first and second derivatives.
 
-Expressions for derivatives are constructed once and can be subsequently evaluated multiple times. Performance is expected to be slow in Python, but I will try to move the evaluation code to C soon. 
+Expressions for derivatives are constructed once and can be subsequently evaluated multiple times. 
 
 ### Example NLP
 
@@ -44,6 +44,44 @@ x1, 0.999
 x2, 4.742
 x3, 3.821
 x4, 1.379
+```
+
+### Fast Evaluators
+
+Fast evaluators can be constructed for expressions. These evaluators evaluate the expression trees much faster. Eventually, these will be used to evaluate all expressions and their derivatives during the solution of a problem.
+
+```python
+import time
+import optmod
+import numpy as np
+
+x = optmod.Variable(name='x', value=np.random.randn(4,3))
+y = optmod.Variable(name='y', value=10.)
+
+f = optmod.sin(3*x+10.)*optmod.cos(y-optmod.sum(x*y))
+
+vars = list(x.get_variables())+[y]
+
+e = f.get_fast_evaluator(vars)
+var_values = np.array([v.get_value() for v in vars])
+e.eval(var_values)
+
+print('same value:', np.all(e.get_value() == f.get_value()))
+
+t0 = time.time()
+for i in range(500):
+    f.get_value()
+t1 = time.time()
+for i in range(500):
+    e.eval(var_values)
+t2 = time.time()
+print('speedup:', (t1-t0)/(t2-t1))
+```
+
+The output is
+```python
+same value: True
+speedup: 533.78
 ```
 
 ## License

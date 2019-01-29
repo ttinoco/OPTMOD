@@ -22,7 +22,7 @@ class TestExpressions(unittest.TestCase):
 
         x = optmod.Variable(name='x', value=2.)
         y = optmod.Variable(name='y', value=3.)
-
+        
         f = 3*(x+3)+optmod.sin(y+4*x)
 
         e = f.get_fast_evaluator([x,y])
@@ -45,7 +45,6 @@ class TestExpressions(unittest.TestCase):
 
     def test_matrix_get_fast_evalulator(self):
 
-        r = np.random.randn(4,3)
         xval = np.random.randn(4,3)
         x = optmod.Variable(name='x', value=xval)
         y = optmod.Variable(name='y', value=10.)
@@ -56,7 +55,8 @@ class TestExpressions(unittest.TestCase):
 
         self.assertTupleEqual(f.shape, (4,3))
 
-        variables = np.asarray(x.data).flatten().tolist()+[y]
+        variables = list(x.get_variables())+[y]
+        self.assertEqual(len(variables), 13)
 
         e = f.get_fast_evaluator(variables)
 
@@ -65,15 +65,15 @@ class TestExpressions(unittest.TestCase):
         self.assertTupleEqual(val.shape, (4,3))
         self.assertTrue(np.all(val == 0))
 
-        e.eval(np.array(r.flatten().tolist()+[13.]))
+        e.eval(np.array([x.get_value() for x in variables]))
 
         val = e.get_value()
-        val1 = np.sin(3*r+10.)*np.cos(13.-np.sum(r*13.))
+        val1 = np.sin(3*xval+10.)*np.cos(10.-np.sum(xval*10.))
 
         self.assertTupleEqual(val.shape, (4,3))
         self.assertLess(np.linalg.norm(val-val1), 1e-10)
 
-        x = np.array(xval.flatten().tolist()+[10.])
+        x = np.array([v.get_value() for v in variables])
         e.eval(x)
 
         self.assertTrue(np.all(e.get_value() == f.get_value()))
