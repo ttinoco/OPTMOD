@@ -34,6 +34,8 @@ class TestCoptmod(unittest.TestCase):
         self.assertEqual(E.num_nodes, 0)
         self.assertEqual(E.num_inputs, 2)
         self.assertEqual(E.num_outputs, 20)
+        self.assertTupleEqual(E.shape, (1, 20))
+        self.assertFalse(E.scalar_output)
 
         f.__fill_evaluator__(E)
         
@@ -55,6 +57,8 @@ class TestCoptmod(unittest.TestCase):
         self.assertEqual(E.num_nodes, 0)
         self.assertEqual(E.num_inputs, 2)
         self.assertEqual(E.num_outputs, 5)
+        self.assertTupleEqual(E.shape, (1, 5))
+        self.assertFalse(E.scalar_output)
 
         f.__fill_evaluator__(E)
         
@@ -63,33 +67,111 @@ class TestCoptmod(unittest.TestCase):
         self.assertEqual(E.num_inputs, 2)
         self.assertEqual(E.num_outputs, 5)
 
-    def test_evaluator_eval(self):
+    def test_evaluator_eval_single_output(self):
 
         x = optmod.Variable(name='x', value=3.)
         y = optmod.Variable(name='y', value=4.)
 
         # var
         f = x
-        e = optmod.coptmod.Evaluator(1, 1)
+        e = optmod.coptmod.Evaluator(1, 1, scalar_output=True)
         f.__fill_evaluator__(e)
         e.set_input_var(0, id(x))
         e.set_output_node(0, id(f))
         self.assertEqual(e.get_value(), 0.)
         e.eval([5.])
-        self.assertEqual(e.get_value().ndim, 2)
-        self.assertTupleEqual(e.get_value().shape, (1,1))
-        self.assertEqual(e.get_value()[0,0], 5.)
+        self.assertEqual(e.get_value(), 5.)
         
         # constant
-
+        f = optmod.constant.Constant(11.)
+        e = optmod.coptmod.Evaluator(1, 1, scalar_output=True)
+        f.__fill_evaluator__(e)
+        e.set_input_var(0, id(x))
+        e.set_output_node(0, id(f))
+        self.assertEqual(e.get_value(), 0.)
+        e.eval([5.])
+        self.assertEqual(e.get_value(), 11.)
+        
         # add
+        f = x + 3
+        e = optmod.coptmod.Evaluator(1, 1, scalar_output=True)
+        f.__fill_evaluator__(e)
+        e.set_input_var(0, id(x))
+        e.set_output_node(0, id(f))
+        self.assertEqual(e.get_value(), 0.)
+        e.eval([9.])
+        self.assertEqual(e.get_value(), 12.)
 
         # sub
+        f = x - 3
+        e = optmod.coptmod.Evaluator(1, 1, scalar_output=True)
+        f.__fill_evaluator__(e)
+        e.set_input_var(0, id(x))
+        e.set_output_node(0, id(f))
+        self.assertEqual(e.get_value(), 0.)
+        e.eval([9.])
+        self.assertEqual(e.get_value(), 6.)
 
         # negate
+        f = -(x+10.)
+        e = optmod.coptmod.Evaluator(1, 1, scalar_output=True)
+        f.__fill_evaluator__(e)
+        e.set_input_var(0, id(x))
+        e.set_output_node(0, id(f))
+        self.assertEqual(e.get_value(), 0.)
+        e.eval([9.])
+        self.assertEqual(e.get_value(), -19.)
 
         # multiply
+        f = y*(x + 3)
+        e = optmod.coptmod.Evaluator(2, 1, scalar_output=True)
+        f.__fill_evaluator__(e)
+        e.set_input_var(0, id(x))
+        e.set_input_var(1, id(y))
+        e.set_output_node(0, id(f))
+        self.assertEqual(e.get_value(), 0.)
+        e.eval([9., -20.])
+        self.assertEqual(e.get_value(), -20.*(9.+3.))
 
         # sin
+        f = optmod.sin(x + 3)
+        e = optmod.coptmod.Evaluator(1, 1, scalar_output=True)
+        f.__fill_evaluator__(e)
+        e.set_input_var(0, id(x))
+        e.set_output_node(0, id(f))
+        self.assertEqual(e.get_value(), 0.)
+        e.eval([9.])
+        self.assertEqual(e.get_value(), np.sin(12.))
 
         # cos
+        f = optmod.cos(3*y)
+        e = optmod.coptmod.Evaluator(1, 1, scalar_output=True)
+        f.__fill_evaluator__(e)
+        e.set_input_var(0, id(y))
+        e.set_output_node(0, id(f))
+        self.assertEqual(e.get_value(), 0.)
+        e.eval([5.])
+        self.assertEqual(e.get_value(), np.cos(15.))
+        
+    def test_evaluator_eval_multi_output(self):
+
+        x = optmod.Variable(name='x', value=3.)
+        y = optmod.Variable(name='y', value=4.)
+
+        # var
+        f1 = 3*(x+optmod.sin(y))
+        f2 = optmod.sum([x,y])
+        e = optmod.coptmod.Evaluator(2, 2)
+        f1.__fill_evaluator__(e)
+        f2.__fill_evaluator__(e)
+        e.set_input_var(0, id(x))
+        e.set_input_var(1, id(y))        
+        e.set_output_node(0, id(f1))
+        e.set_output_node(1, id(f2))
+        val = e.get_value()
+        self.assertTupleEqual(val.shape, (1,2))
+        self.assertTrue(isinstance(val, np.matrix))
+        e.eval([5., 8.])
+        val = e.get_value()
+        self.assertEqual(val[0,0], 3.*(5.+np.sin(8.)))
+        self.assertEqual(val[0,1], 5.+8.)        

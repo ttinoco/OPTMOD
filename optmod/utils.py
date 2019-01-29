@@ -9,14 +9,11 @@ def sum(x, axis=None):
 
     if isinstance(x, Expression):
         return np.sum(x, axis=axis)
-    elif isinstance(x, ExpressionMatrix):
+    else:
         s = np.sum(ExpressionMatrix(x).data, axis=axis)
         if isinstance(s, np.ndarray):
             return ExpressionMatrix(s)
         else:
-            return s
-    else:
-        raise TypeError('invalid input type')
-    
+            return s    
 
     
