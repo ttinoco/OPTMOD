@@ -416,6 +416,13 @@ class ExpressionMatrix(object):
         else:
             return np.asmatrix(self.data, dtype=np.float64)
 
+    def get_variables(self):
+
+        return reduce(lambda x,y: x.union(y),
+                      map(lambda arg: arg.get_variables(),
+                      np.asarray(self.data).flatten().tolist()),
+                      set())
+
     def get_fast_evaluator(self, variables):
 
         assert(isinstance(variables, list))

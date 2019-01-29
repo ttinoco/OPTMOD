@@ -52,6 +52,12 @@ class TestVariables(unittest.TestCase):
         self.assertEqual(x.name, 'x')
         self.assertEqual(x.value, 3.)
         self.assertTrue(isinstance(x.value, np.float64))
+
+    def test_get_variables(self):
+
+        x = optmod.Variable(name='x')
+
+        self.assertSetEqual(x.get_variables(), set([x]))
         
     def test_repr(self):
 

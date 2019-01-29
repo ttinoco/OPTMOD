@@ -5,6 +5,19 @@ import numpy as np
 
 class TestExpressions(unittest.TestCase):
 
+    def test_get_variables(self):
+
+        x = optmod.Variable(name='x', shape=(2,3))
+        y = optmod.Variable(name='y')
+
+        f = optmod.sin(x*3) + optmod.cos(y+10.)*x
+
+        vars = f.get_variables()
+        self.assertEqual(len(vars), 7)
+
+        self.assertSetEqual(f.get_variables(),
+                            set([x[i,j] for i in range(2) for j in range(3)]+[y]))
+
     def test_scalar_get_fast_evaluator(self):
 
         x = optmod.Variable(name='x', value=2.)
@@ -28,7 +41,7 @@ class TestExpressions(unittest.TestCase):
         for i in range(50000):
             e.eval(x)
         t2 = time.time()
-        self.assertGreater((t1-t0)/(t2-t1), 20.)
+        self.assertGreater((t1-t0)/(t2-t1), 15.)
 
     def test_matrix_get_fast_evalulator(self):
 
@@ -66,10 +79,10 @@ class TestExpressions(unittest.TestCase):
         self.assertTrue(np.all(e.get_value() == f.get_value()))
 
         t0 = time.time()
-        for i in range(10000):
+        for i in range(500):
             f.get_value()
         t1 = time.time()
-        for i in range(10000):
+        for i in range(500):
             e.eval(x)
         t2 = time.time()
-        self.assertGreater((t1-t0)/(t2-t1), 500.)
+        self.assertGreater((t1-t0)/(t2-t1), 400.)

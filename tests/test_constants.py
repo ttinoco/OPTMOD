@@ -2,7 +2,7 @@ import optmod
 import unittest
 import numpy as np
 
-class TestScalarConstants(unittest.TestCase):
+class TestConstants(unittest.TestCase):
 
     def test_construction(self):
 
@@ -14,6 +14,12 @@ class TestScalarConstants(unittest.TestCase):
 
         self.assertRaises(TypeError, optmod.constant.Constant, [1,2,3])
         self.assertRaises(TypeError, optmod.constant.Constant, optmod.constant.Constant(3.))
+
+    def test_get_variables(self):
+
+        c = optmod.constant.Constant(4.)
+
+        self.assertSetEqual(c.get_variables(), set())
 
     def test_repr(self):
 
