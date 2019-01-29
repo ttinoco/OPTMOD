@@ -240,6 +240,20 @@ class Expression(object):
     
         return set()
 
+    def get_fast_evaluator(self, variables):
+
+        assert(isinstance(variables, list))
+
+        e = coptmod.Evaluator(len(variables),
+                              1,
+                              scalar_output=True)
+        self.__fill_evaluator__(e)
+        for i, var in enumerate(variables):
+            e.set_input_var(i, id(var))
+        e.set_output_node(0, id(self))
+        
+        return e
+
     def is_zero(self):
 
         return False
@@ -406,15 +420,17 @@ class ExpressionMatrix(object):
 
         assert(isinstance(variables, list))
 
-        e = coptmod.evaluator(len(variables), self.shape[0]*self.shape[1])
-        for i, var in enumerate(variables):
-            e.set_input_var(i, id(var))
+        e = coptmod.Evaluator(len(variables),
+                              self.shape[0]*self.shape[1],
+                              shape=self.shape,
+                              scalar_output=False)
         for i in range(self.shape[0]):
             for j in range(self.shape[1]):
-                x = self.data[i.j]
+                x = self.data[i,j]
                 x.__fill_evaluator__(e)
                 e.set_output_node(i*self.shape[1]+j, id(x))
-        
+        for i, var in enumerate(variables):
+            e.set_input_var(i, id(var))
         return e
               
 class SparseExpressionMatrix:
