@@ -409,6 +409,10 @@ class ExpressionMatrix(object):
 
         else:
             return ConstraintArray(np.vectorize(lambda a,b: a.__cmp_util__(op, b))(self.data, np.asarray(x)))
+
+    def get_data(self):
+
+        return self.data
         
     def get_value(self):
 

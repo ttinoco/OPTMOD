@@ -66,3 +66,25 @@ class TestVariableMatrices(unittest.TestCase):
         x = optmod.variable.VariableMatrix(name='x', shape=(2,3), value=r)
         self.assertTrue(isinstance(x.get_value(), np.matrix))
         self.assertTrue(np.all(x.get_value() == r))
+
+    def test_set_value(self):
+
+        x = optmod.variable.VariableMatrix(name='x', shape=(2,3))
+
+        r = np.random.randn(2,3)
+        
+        self.assertTrue(isinstance(x.get_value(), np.matrix))
+        self.assertTrue(np.all(x.get_value() == np.zeros((2,3))))
+
+        self.assertRaises(ValueError, x.set_value, np.random.randn(3,2))
+        self.assertRaises(ValueError, x.set_value, 10)
+        
+        x.set_value(r)
+
+        self.assertTrue(isinstance(x.get_value(), np.matrix))
+        self.assertTrue(np.all(x.get_value() == r))
+
+        for i in range(2):
+            for j in range(3):
+                self.assertEqual(x[i,j].get_value(), r[i,j])
+        

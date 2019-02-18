@@ -90,6 +90,17 @@ class VariableMatrix(ExpressionMatrix):
                                  for i in range(shape[0])],
                                 dtype=object)
 
+    def set_value(self, val):
+
+        val = np.asmatrix(val)
+
+        if val.shape != self.shape:
+            raise ValueError('invalid shape of value')
+
+        for i in range(self.shape[0]):
+            for j in range(self.shape[1]):
+                self.data[i,j].set_value(val[i,j])
+
 def Variable(name='var', value=None, shape=None):
 
     mat = False

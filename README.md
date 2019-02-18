@@ -6,7 +6,7 @@
 
 Experimental optimization modeling layer for OPTALG with automatic sparse first and second derivatives.
 
-Expressions for derivatives are constructed once and can be subsequently evaluated multiple times. 
+Expressions for derivatives are constructed once and can be then evaluated multiple times efficiently.
 
 ### Example NLP
 
@@ -48,7 +48,7 @@ x4, 1.379
 
 ### Fast Evaluators
 
-Fast evaluators can be constructed for expressions. These evaluators evaluate the expression trees much faster. Eventually, these will be used to evaluate all expressions and their derivatives during the solution of a problem.
+Fast evaluators can be constructed for expressions. These evaluators evaluate the expression trees much faster. These are used by default to evaluate all expressions and their derivatives during the solution of an optimization problem.
 
 ```python
 import time

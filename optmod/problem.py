@@ -1,5 +1,6 @@
 import types
 import numpy as np
+from . import coptmod
 from .constraint import Constraint
 from scipy.sparse import coo_matrix
 from .expression import make_Expression, ExpressionMatrix
@@ -114,7 +115,7 @@ class Problem(object):
                                 
         return dict(obj_comp, **constr_comp)
 
-    def __get_std_problem__(self):
+    def __get_std_problem__(self, fast_evaluator=True):
 
         import optalg
 
@@ -133,7 +134,7 @@ class Problem(object):
         index2var = dict(zip(range(len(vars)), vars))
         
         # Objective
-        phi_data = comp['phi']
+        phi_data = ExpressionMatrix(comp['phi'])
         gphi_list = comp['gphi_list']
         Hphi_list = comp['Hphi_list']
         gphi_indices = np.array([var2index[x] for x, exp in gphi_list])
@@ -247,37 +248,97 @@ class Problem(object):
         # Aux data
         p.var2index = var2index       # dict: var -> index
         p.index2var = index2var       # dict: index -> var
-        p.phi_data = phi_data         # expression
+        p.phi_data = phi_data         # expression matrix
         p.gphi_indices = gphi_indices # array of indices
-        p.gphi_data = gphi_data       # expression array
-        p.Hphi_data = Hphi_data       # expression array
-        p.f_data = f_data             # expression array
-        p.J_data = J_data             # expression array
-        p.H_comb_data = H_comb_data   # expression array
+        p.gphi_data = gphi_data       # expression matrix
+        p.Hphi_data = Hphi_data       # expression matrix
+        p.f_data = f_data             # expression matrix
+        p.J_data = J_data             # expression matrix
+        p.H_comb_data = H_comb_data   # expression matrix
         p.H_comb_nnz = H_comb_nnz     # array
-        
-        # Eval
-        def eval(obj, x):
 
-            # Set values
-            for i, var in obj.index2var.items():
-                var.set_value(x[i])
+        # Slow evaluator
+        if not fast_evaluator:
+        
+            # Eval
+            def eval(obj, x):
                 
-            # Eval experssions                    
-            obj.phi = obj.phi_data.get_value()
-            obj.gphi[obj.gphi_indices] = obj.gphi_data.get_value()
-            obj.Hphi.data[:] = obj.Hphi_data.get_value()
-            obj.f[:] = obj.f_data.get_value()
-            obj.J.data[:] = obj.J_data.get_value()
-            obj.H_combined.data[:] = obj.H_comb_data.get_value()
-        p.eval = types.MethodType(eval, p)
+                # Set values
+                for i, var in obj.index2var.items():
+                    var.set_value(x[i])
+                
+                # Eval experssions                    
+                obj.phi = obj.phi_data[0,0].get_value()
+                obj.gphi[obj.gphi_indices] = obj.gphi_data.get_value()
+                obj.Hphi.data[:] = obj.Hphi_data.get_value()
+                obj.f[:] = obj.f_data.get_value()
+                obj.J.data[:] = obj.J_data.get_value()
+                obj.H_combined.data[:] = obj.H_comb_data.get_value()
+                
+            p.eval = types.MethodType(eval, p)
+
+        # Fast evaluator
+        else:
+
+            offset_phi_data = 0
+            offset_gphi_data = offset_phi_data + phi_data.shape[1]
+            offset_Hphi_data = offset_gphi_data + gphi_data.shape[1]
+            offset_f_data = offset_Hphi_data + Hphi_data.shape[1]
+            offset_J_data = offset_f_data + f_data.shape[1]
+            offset_H_comb_data = offset_J_data + J_data.shape[1]
+            total_size = offset_H_comb_data + H_comb_data.shape[1]
+
+            e = coptmod.Evaluator(len(vars),
+                                  total_size,
+                                  shape=(1, total_size),
+                                  scalar_output=False)
+
+            for offset, exp_mat in [(offset_phi_data, phi_data),
+                                    (offset_gphi_data, gphi_data),
+                                    (offset_Hphi_data, Hphi_data),
+                                    (offset_f_data, f_data),
+                                    (offset_J_data, J_data),
+                                    (offset_H_comb_data, H_comb_data)]:
+                                    
+                data = exp_mat.get_data()
+                for i in range(data.size):
+                    data[0,i].__fill_evaluator__(e)
+                    e.set_output_node(offset+i, id(data[0,i]))
+
+            for i, var in enumerate(vars):
+                e.set_input_var(i, id(var))
+                
+            p.e = e
+            p.offset_phi_data = offset_phi_data
+            p.offset_gphi_data = offset_gphi_data
+            p.offset_Hphi_data = offset_Hphi_data
+            p.offset_f_data = offset_f_data
+            p.offset_J_data = offset_J_data
+            p.offset_H_comb_data  = offset_H_comb_data
+
+            # Eval
+            def eval(obj, x):
+                
+                # Eval experssions
+                obj.e.eval(x)
+
+                # Extract values
+                value = obj.e.get_value()
+                obj.phi = value[0,obj.offset_phi_data]                
+                obj.gphi[obj.gphi_indices] = value[0,obj.offset_gphi_data:obj.offset_Hphi_data]
+                obj.Hphi.data[:] = value[0,obj.offset_Hphi_data:obj.offset_f_data]
+                obj.f[:] = value[0,obj.offset_f_data:obj.offset_J_data]
+                obj.J.data[:] = value[0,obj.offset_J_data:obj.offset_H_comb_data]
+                obj.H_combined.data[:] = value[0,obj.offset_H_comb_data:]
+                
+            p.eval = types.MethodType(eval, p)
                 
         # Combine H
         def combine_H(obj, lam, ensure_psd=False):
             obj.H_combined.data *= obj.H_combined_broad*lam
             
         p.combine_H = types.MethodType(combine_H, p)
-        
+                
         # Return
         return p
             
@@ -285,15 +346,18 @@ class Problem(object):
     #
     #    return self.get_variables().union(*[c.get_variables() for c in self.constraints])
 
-    def solve(self, solver='ipopt', parameters=None):
+    def solve(self, solver='ipopt', parameters=None, fast_evaluator=True):
 
         import optalg
 
+        # Params
         if parameters is None:
             parameters = {}
 
-        std_prob = self.__get_std_problem__()
-        
+        # Problem
+        std_prob = self.__get_std_problem__(fast_evaluator=fast_evaluator)
+
+        # Solver
         if solver == 'augl':
             solver = optalg.opt_solver.OptSolverAugL()
         elif solver == 'ipopt':
@@ -301,11 +365,20 @@ class Problem(object):
         elif solver == 'inlp':
             solver = optalg.opt_solver.OptSolverINLP()
 
+        # Configure
         solver.set_parameters(parameters)
 
+        # Solve
         try:
             solver.solve(std_prob)
         except optalg.opt_solver.OptSolverError:
             pass
 
+        # Get values
+        x = solver.get_primal_variables()
+        if x is not None:
+            for i, var in std_prob.index2var.items():
+                var.set_value(x[i])
+
+        # Return
         return solver.get_status()
