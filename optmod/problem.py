@@ -178,7 +178,8 @@ class Problem(object):
         H_comb_col = []
         H_comb_data = []
         H_comb_nnz = []
-        for HH_list in H_list:
+        H_comb_broad_col = []
+        for k, HH_list in enumerate(H_list):
             row = []
             col = []
             data = []
@@ -192,10 +193,12 @@ class Problem(object):
                     row.append(j)
                     col.append(i)
                 data.append(d)
+            nnz = len(data)
             H_comb_row.extend(row)
             H_comb_col.extend(col)
             H_comb_data.extend(data)
-            H_comb_nnz.append(len(data))
+            H_comb_nnz.append(nnz)
+            H_comb_broad_col.extend([k]*nnz)
         H_comb_row = np.array(H_comb_row)
         H_comb_col = np.array(H_comb_col)
         H_comb_data = ExpressionMatrix(H_comb_data)
@@ -216,7 +219,7 @@ class Problem(object):
         # Problem
         p = optalg.opt_solver.OptProblem()
         
-        p.phi = 0
+        p.phi = 0.
         p.gphi = np.zeros(num_vars)
         p.Hphi = coo_matrix((np.zeros(Hphi_data.shape[1]),
                              (Hphi_row, Hphi_col)),
@@ -232,6 +235,9 @@ class Problem(object):
         p.H_combined = coo_matrix((np.zeros(int(np.sum(H_comb_nnz))),
                                    (H_comb_row, H_comb_col)),
                                   shape=(num_vars, num_vars))
+        p.H_combined_broad = coo_matrix((np.ones(p.H_combined.nnz),
+                                         (range(p.H_combined.nnz), H_comb_broad_col)),
+                                        shape=(p.H_combined.nnz, p.f.size)).tocsr()
 
         p.u = u
         p.l = l
@@ -267,12 +273,8 @@ class Problem(object):
         p.eval = types.MethodType(eval, p)
                 
         # Combine H
-        def combine_H(obj, lam, ensure_psd=False):            
-            offset = 0
-            assert(lam.size == obj.H_comb_nnz.size)
-            for i, nnz in enumerate(obj.H_comb_nnz):                
-                obj.H_combined.data[offset:offset+nnz] *= lam[i]
-                offset += nnz
+        def combine_H(obj, lam, ensure_psd=False):
+            obj.H_combined.data *= obj.H_combined_broad*lam
             
         p.combine_H = types.MethodType(combine_H, p)
         

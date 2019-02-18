@@ -29,7 +29,8 @@ class TestExpressions(unittest.TestCase):
         
         self.assertTrue(isinstance(e, optmod.coptmod.Evaluator))
         self.assertEqual(e.get_value(), 0.)
-        e.eval([4.,-3.])        
+        e.eval([4.,-3.])
+        self.assertTrue(np.isscalar(e.get_value()))
         self.assertEqual(e.get_value(), 3.*(4+3.)+np.sin(-3.+4*4.))
 
         x = np.array([2.,3.])
@@ -61,6 +62,7 @@ class TestExpressions(unittest.TestCase):
         e = f.get_fast_evaluator(variables)
 
         val = e.get_value()
+        self.assertTrue(isinstance(val, np.matrix))
 
         self.assertTupleEqual(val.shape, (4,3))
         self.assertTrue(np.all(val == 0))

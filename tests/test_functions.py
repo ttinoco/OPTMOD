@@ -7,7 +7,7 @@ class TestFunctions(unittest.TestCase):
     def test_contruction(self):
 
         x = optmod.variable.VariableScalar(name='x')
-
+        
         f = optmod.function.Function([x, 1.])
 
         self.assertTrue(isinstance(f, optmod.function.Function))
