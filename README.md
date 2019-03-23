@@ -4,7 +4,7 @@
 
 ## Overview
 
-Experimental optimization modeling layer for OPTALG with automatic sparse first and second derivatives.
+Experimental optimization modeling layer for [OPTALG](https://github.com/ttinoco/OPTALG) (dev branch) with automatic sparse first and second derivatives.
 
 Expressions for derivatives are constructed once and can be then evaluated multiple times efficiently.
 
