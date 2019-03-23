@@ -8,5 +8,5 @@ from . import coptmod
 
 from .variable import Variable
 from .function import sin, cos
-from .problem import minimize, maximize, Problem
+from .problem import minimize, maximize, EmptyObjective, Problem
 from .utils import sum

@@ -42,6 +42,20 @@ class TestVariableMatrices(unittest.TestCase):
         self.assertRaises(ValueError, optmod.variable.VariableMatrix, x, np.random.randn(1,4), (2,3))
         self.assertRaises(ValueError, optmod.variable.VariableMatrix, x, [[1,2], [3,4]], (2,3))
 
+    def test_type(self):
+
+        x = optmod.variable.VariableMatrix(name='x', shape=(2,3))
+        for i in range(2):
+            for j in range(3):
+                self.assertTrue(x[i,j].is_continuous())
+                self.assertFalse(x[i,j].is_binary())
+
+        x = optmod.variable.VariableMatrix(name='x', shape=(2,3), type='binary')
+        for i in range(2):
+            for j in range(3):
+                self.assertFalse(x[i,j].is_continuous())
+                self.assertTrue(x[i,j].is_binary())        
+
     def test_get_variables(self):
 
         x = optmod.Variable(name='x', shape=(2,3))

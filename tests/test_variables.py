@@ -10,11 +10,14 @@ class TestVariables(unittest.TestCase):
         self.assertTrue(isinstance(x, optmod.variable.VariableScalar))
         self.assertEqual(x.name, 'var')
         self.assertEqual(x.value, 0.)
-
-        x = optmod.Variable(name='x', value=2.)
+        self.assertEqual(x.type, 'continuous')
+        
+        x = optmod.Variable(name='x', value=2., type='binary')
         self.assertTrue(isinstance(x, optmod.variable.VariableScalar))
         self.assertEqual(x.name, 'x')
         self.assertEqual(x.value, 2.)
+        self.assertEqual(x.type, 'binary')
+        self.assertTrue(x.is_binary())
 
         x = optmod.Variable('x', None, (3,))
         self.assertTupleEqual(x.shape, (3,1))
@@ -36,11 +39,30 @@ class TestVariables(unittest.TestCase):
         self.assertTupleEqual(val.shape, x.shape)
         self.assertTupleEqual(val.shape, (2,3))
         self.assertTrue(np.all(val == np.array([[1,2,3],[4,5,6]])))
-
+        for i in range(2):
+            for j in range(3):
+                self.assertFalse(x[i,j].is_binary())
+                self.assertTrue(x[i,j].is_continuous())                              
+        
         x = optmod.Variable(name='x', shape=(1,3), value=[[1,2,3]])
         
         x = optmod.Variable('x', [[3,4,5]], (3,))
         self.assertTupleEqual(x.shape, (3,1))
+
+        x = optmod.Variable(type='binary')
+        self.assertEqual(x.value, 0.)
+        self.assertEqual(x.name, 'var')
+        self.assertTrue(x.is_binary())
+        self.assertFalse(x.is_continuous())
+
+        self.assertRaises(ValueError, optmod.Variable, 'x', 0., None, 'foo')
+
+        x = optmod.Variable('x', shape=(2,3), type='binary')
+        self.assertTupleEqual(x.shape, (2,3))
+        for i in range(2):
+            for j in range(3):
+                self.assertTrue(x[i,j].is_binary())
+                self.assertFalse(x[i,j].is_continuous())
 
     def test_construction(self):
 
@@ -52,6 +74,22 @@ class TestVariables(unittest.TestCase):
         self.assertEqual(x.name, 'x')
         self.assertEqual(x.value, 3.)
         self.assertTrue(isinstance(x.value, np.float64))
+
+    def test_type(self):
+
+        x = optmod.variable.VariableScalar()
+        self.assertTrue(x.is_continuous())
+        self.assertFalse(x.is_binary())
+
+        x = optmod.variable.VariableScalar(type='continuous')
+        self.assertTrue(x.is_continuous())
+        self.assertFalse(x.is_binary())
+
+        x = optmod.variable.VariableScalar(type='binary')
+        self.assertFalse(x.is_continuous())
+        self.assertTrue(x.is_binary())
+
+        self.assertRaises(ValueError, optmod.variable.VariableScalar, 'var', 0., 'foo')
 
     def test_get_variables(self):
 

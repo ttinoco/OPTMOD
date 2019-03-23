@@ -65,7 +65,7 @@ class EmptyObjective(minimize):
     
     def __get_std_components__(self):
 
-        return self.function.__get_std__components__()
+        return self.function.__get_std_components__()
 
 class Problem(object):
 
@@ -117,7 +117,7 @@ class Problem(object):
 
     def __get_std_problem__(self, fast_evaluator=True):
 
-        import optalg
+        from optalg.opt_solver import OptProblem
 
         comp = self.__get_std_components__()
 
@@ -128,7 +128,7 @@ class Problem(object):
         vars = list(vars)
         num_vars = len(vars)
         var_values = np.array([x.get_value() for x in vars])
-
+        
         # Index map
         var2index = dict(zip(vars, range(len(vars))))
         index2var = dict(zip(range(len(vars)), vars))
@@ -218,7 +218,7 @@ class Problem(object):
             l[index] = np.maximum(l[index], val)
                     
         # Problem
-        p = optalg.opt_solver.OptProblem()
+        p = OptProblem()
         
         p.phi = 0.
         p.gphi = np.zeros(num_vars)
@@ -243,6 +243,8 @@ class Problem(object):
         p.u = u
         p.l = l
 
+        p.P = np.array([vars[i].is_binary() for i in range(num_vars)], dtype=bool)
+
         p.x = var_values
 
         # Aux data
@@ -257,6 +259,25 @@ class Problem(object):
         p.H_comb_data = H_comb_data   # expression matrix
         p.H_comb_nnz = H_comb_nnz     # array
 
+        # Properties (curvature)
+        p.properties = []
+        if comp['phi_prop']['affine'] and all([prop['affine'] for prop in comp['prop_list']]):
+            p.properties.append(OptProblem.PROP_CURV_LINEAR)
+        else:
+            p.properties.append(OptProblem.PROP_CURV_NONLINEAR)
+
+        # Properties (var types)
+        if np.any(p.P):
+            p.properties.append(OptProblem.PROP_VAR_BINARY)
+        else:
+            p.properties.append(OptProblem.PROP_VAR_CONTINUOUS)
+
+        # Properties (problem type)
+        if not comp['phi_prop']['a'].keys():
+            p.properties.append(OptProblem.PROP_TYPE_FEASIBILITY)
+        else:
+            p.properties.append(OptProblem.PROP_TYPE_OPTIMIZATION)
+
         # Slow evaluator
         if not fast_evaluator:
         
@@ -269,7 +290,8 @@ class Problem(object):
                 
                 # Eval experssions                    
                 obj.phi = obj.phi_data[0,0].get_value()
-                obj.gphi[obj.gphi_indices] = obj.gphi_data.get_value()
+                if obj.gphi_indices.size:
+                    obj.gphi[obj.gphi_indices] = obj.gphi_data.get_value()
                 obj.Hphi.data[:] = obj.Hphi_data.get_value()
                 obj.f[:] = obj.f_data.get_value()
                 obj.J.data[:] = obj.J_data.get_value()
@@ -324,8 +346,9 @@ class Problem(object):
 
                 # Extract values
                 value = obj.e.get_value()
-                obj.phi = value[0,obj.offset_phi_data]                
-                obj.gphi[obj.gphi_indices] = value[0,obj.offset_gphi_data:obj.offset_Hphi_data]
+                obj.phi = value[0,obj.offset_phi_data]
+                if obj.gphi_indices.size:
+                    obj.gphi[obj.gphi_indices] = value[0,obj.offset_gphi_data:obj.offset_Hphi_data]
                 obj.Hphi.data[:] = value[0,obj.offset_Hphi_data:obj.offset_f_data]
                 obj.f[:] = value[0,obj.offset_f_data:obj.offset_J_data]
                 obj.J.data[:] = value[0,obj.offset_J_data:obj.offset_H_comb_data]
@@ -364,6 +387,20 @@ class Problem(object):
             solver = optalg.opt_solver.OptSolverIpopt()
         elif solver == 'inlp':
             solver = optalg.opt_solver.OptSolverINLP()
+        elif solver == 'clp':
+            solver = optalg.opt_solver.OptSolverClp()
+        elif solver == 'cbc':
+            solver = optalg.opt_solver.OptSolverCbc()
+        elif solver == 'iqp':
+            solver = optalg.opt_solver.OptSolverIQP()
+        elif solver == 'nr':
+            solver = optalg.opt_solver.OptSolverNR()
+        else:
+            raise ValueError('invalid solver')
+
+        # Properties
+        if not solver.supports_properties(std_prob.properties):
+            raise TypeError('problem type not supported by solver')
 
         # Configure
         solver.set_parameters(parameters)

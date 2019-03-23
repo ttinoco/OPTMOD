@@ -2,7 +2,7 @@ import optmod
 import unittest
 import numpy as np
 from numpy.linalg import norm
-from optmod import minimize, maximize
+from optmod import minimize, maximize, EmptyObjective
 
 class TestProblems(unittest.TestCase):
 
@@ -159,6 +159,14 @@ class TestProblems(unittest.TestCase):
         temp[index_s3] = 0
         self.assertTrue(np.all(std_prob.l == temp))
 
+        # binary flags
+        self.assertTrue(isinstance(std_prob.P, np.ndarray))
+        self.assertEqual(std_prob.P.size, 5)
+        self.assertNotEqual(std_prob.P.dtype, int)
+        self.assertEqual(std_prob.P.dtype, bool)
+        self.assertTrue(np.all(std_prob.P == False))
+        self.assertFalse(np.any(std_prob.P == True))
+
         # phi, gphi, Hphi before eval
         self.assertEqual(std_prob.phi, 0.)
         self.assertTrue(np.all(std_prob.gphi == np.zeros(5)))
@@ -227,7 +235,12 @@ class TestProblems(unittest.TestCase):
         self.assertTrue(np.all(std_prob.H_combined.data == np.array([1.*lam[0],
                                                                      -np.sin(var[index_x])*lam[1],
                                                                      -np.cos(var[index_y])*lam[2]])))
-                                                              
+
+        # Properties
+        self.assertTrue(len(std_prob.properties), 3)
+        self.assertTrue('continuous' in std_prob.properties)
+        self.assertTrue('optimization' in std_prob.properties)
+        self.assertTrue('nonlinear' in std_prob.properties)        
 
     def test_solve_LP(self):
 
@@ -241,6 +254,10 @@ class TestProblems(unittest.TestCase):
                                         80 <= y,
                                         y <= 170,
                                         y >= -x + 200])
+
+        # std prob
+        std_prob = p.__get_std_problem__()
+        self.assertListEqual(std_prob.properties, ['linear', 'continuous', 'optimization'])
                 
         status = p.solve(solver='inlp', parameters={'quiet': True})
 
@@ -263,6 +280,10 @@ class TestProblems(unittest.TestCase):
 
         # Problem
         p = optmod.Problem(objective=minimize(f))
+
+        # std prob
+        std_prob = p.__get_std_problem__()
+        self.assertListEqual(std_prob.properties, ['nonlinear', 'continuous', 'optimization'])
                 
         status = p.solve(solver='inlp', parameters={'quiet': True})
         
@@ -309,6 +330,10 @@ class TestProblems(unittest.TestCase):
         # Problem
         p = optmod.Problem(minimize(f))
 
+        # std prob
+        std_prob = p.__get_std_problem__()
+        self.assertListEqual(std_prob.properties, ['nonlinear', 'continuous', 'optimization'])
+
         try:
             status = p.solve(solver='ipopt', parameters={'quiet': True}, fast_evaluator=True)
         except ImportError:
@@ -347,6 +372,10 @@ class TestProblems(unittest.TestCase):
 
         p = optmod.Problem(minimize(f), constraints=constraints)
 
+        # std prob
+        std_prob = p.__get_std_problem__()
+        self.assertListEqual(std_prob.properties, ['nonlinear', 'continuous', 'optimization'])
+
         try:
             status = p.solve(solver='ipopt', parameters={'quiet': True}, fast_evaluator=True)
         except ImportError:
@@ -372,3 +401,76 @@ class TestProblems(unittest.TestCase):
         self.assertAlmostEqual(x2.get_value(), 4.7429994, places=3)
         self.assertAlmostEqual(x3.get_value(), 3.8211503, places=3)
         self.assertAlmostEqual(x4.get_value(), 1.3794082, places=3)
+
+    def test_solve_MILP(self):
+
+        x1 = optmod.Variable('x1', type='binary')
+        x2 = optmod.Variable('x2', type='binary')
+        x3 = optmod.Variable('x3')
+        x4 = optmod.Variable('x4')
+
+        obj = -x1-x2
+        constr = [-2*x1+2*x2+x3 == 1,
+                  -8*x1+10*x2+x4 == 13,
+                  x4 >= 0,
+                  x3 <= 0]
+        
+        p = optmod.Problem(minimize(obj), constr)
+
+        # std prob
+        std_prob = p.__get_std_problem__()
+        self.assertListEqual(std_prob.properties, ['linear', 'binary', 'optimization'])
+        
+        self.assertRaises(TypeError, p.solve, 'ipopt')
+        self.assertRaises(TypeError, p.solve, 'augl')
+        self.assertRaises(TypeError, p.solve, 'clp')
+        self.assertRaises(TypeError, p.solve, 'inlp')
+
+        try:
+            status = p.solve('cbc', parameters={'quiet': True})
+        except ImportError:
+            raise unittest.SkipTest('no cbc')
+
+        self.assertEqual(status, 'solved')
+        self.assertEqual(x1.get_value(), 1.)
+        self.assertEqual(x2.get_value(), 2.)
+
+        x1.type = 'continuous'
+        x2.type = 'continuous'
+
+        try:
+            status = p.solve('cbc', parameters={'quiet': True})
+        except ImportError:
+            raise unittest.SkipTest('no cbc')
+
+        self.assertEqual(status, 'solved')
+        self.assertEqual(x1.get_value(), 4.)
+        self.assertEqual(x2.get_value(), 4.5)
+
+    def test_solve_feasibility(self):
+
+        x = optmod.Variable('x', value=1.)
+
+        constr = [x*optmod.cos(x)-x*x == 0]
+        
+        p = optmod.Problem(EmptyObjective(), constr)
+
+        # std prob
+        std_prob = p.__get_std_problem__()
+        self.assertListEqual(std_prob.properties, ['nonlinear', 'continuous', 'feasibility'])
+
+        self.assertRaises(TypeError, p.solve, 'clp')
+        self.assertRaises(TypeError, p.solve, 'cbc')
+
+        status = p.solve('nr', parameters={'quiet': True, 'feastol': 1e-10})
+        
+        self.assertEqual(status, 'solved')
+        self.assertAlmostEqual(x.get_value(), 0.739085133215161, places=7)
+
+        x.value = 1.
+        self.assertNotAlmostEqual(x.get_value(), 0.739085133215161, places=7)
+
+        status = p.solve('nr', parameters={'quiet': True, 'feastol': 1e-10}, fast_evaluator=False)
+
+        self.assertEqual(status, 'solved')
+        self.assertAlmostEqual(x.get_value(), 0.739085133215161, places=7)

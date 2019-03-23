@@ -4,12 +4,16 @@ from .expression import Expression, ExpressionMatrix, make_Expression
 
 class VariableScalar(Expression):
 
-    def __init__(self, name='var', value=0.):
+    def __init__(self, name='var', value=0., type='continuous'):
+
+        if type not in ['binary', 'continuous']:
+            raise ValueError('invalid variable type')
         
         Expression.__init__(self)
 
         self.name = name
         self.value = np.float64(value) if value is not None else 0.
+        self.type = type
 
     def __repr__(self):
 
@@ -57,13 +61,21 @@ class VariableScalar(Expression):
 
         return True
 
+    def is_continuous(self):
+
+        return self.type == 'continuous'
+
+    def is_binary(self):
+
+        return self.type == 'binary'
+
     def set_value(self, val):
 
         self.value = val
         
 class VariableMatrix(ExpressionMatrix):
 
-    def __init__(self, name='var', value=None, shape=None):
+    def __init__(self, name='var', value=None, shape=None, type='continuous'):
         
         ExpressionMatrix.__init__(self)
 
@@ -85,7 +97,8 @@ class VariableMatrix(ExpressionMatrix):
             
         self.shape = shape
         self.data = np.asmatrix([[VariableScalar(name=name+'[%d,%d]' %(i,j),
-                                                 value=np.float64(value[i,j]))
+                                                 value=np.float64(value[i,j]),
+                                                 type=type)
                                   for j in range(shape[1])]
                                  for i in range(shape[0])],
                                 dtype=object)
@@ -101,7 +114,7 @@ class VariableMatrix(ExpressionMatrix):
             for j in range(self.shape[1]):
                 self.data[i,j].set_value(val[i,j])
 
-def Variable(name='var', value=None, shape=None):
+def Variable(name='var', value=None, shape=None, type='continuous'):
 
     mat = False
     if shape is not None:
@@ -111,6 +124,6 @@ def Variable(name='var', value=None, shape=None):
         mat = True
 
     if not mat:
-        return VariableScalar(name=name, value=value)
+        return VariableScalar(name=name, value=value, type=type)
     else:
-        return VariableMatrix(name=name, value=value, shape=shape)
+        return VariableMatrix(name=name, value=value, shape=shape, type=type)
