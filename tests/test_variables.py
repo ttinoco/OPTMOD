@@ -12,12 +12,12 @@ class TestVariables(unittest.TestCase):
         self.assertEqual(x.value, 0.)
         self.assertEqual(x.type, 'continuous')
         
-        x = optmod.Variable(name='x', value=2., type='binary')
+        x = optmod.Variable(name='x', value=2., type='integer')
         self.assertTrue(isinstance(x, optmod.variable.VariableScalar))
         self.assertEqual(x.name, 'x')
         self.assertEqual(x.value, 2.)
-        self.assertEqual(x.type, 'binary')
-        self.assertTrue(x.is_binary())
+        self.assertEqual(x.type, 'integer')
+        self.assertTrue(x.is_integer())
 
         x = optmod.Variable('x', None, (3,))
         self.assertTupleEqual(x.shape, (3,1))
@@ -41,7 +41,7 @@ class TestVariables(unittest.TestCase):
         self.assertTrue(np.all(val == np.array([[1,2,3],[4,5,6]])))
         for i in range(2):
             for j in range(3):
-                self.assertFalse(x[i,j].is_binary())
+                self.assertFalse(x[i,j].is_integer())
                 self.assertTrue(x[i,j].is_continuous())                              
         
         x = optmod.Variable(name='x', shape=(1,3), value=[[1,2,3]])
@@ -49,19 +49,19 @@ class TestVariables(unittest.TestCase):
         x = optmod.Variable('x', [[3,4,5]], (3,))
         self.assertTupleEqual(x.shape, (3,1))
 
-        x = optmod.Variable(type='binary')
+        x = optmod.Variable(type='integer')
         self.assertEqual(x.value, 0.)
         self.assertEqual(x.name, 'var')
-        self.assertTrue(x.is_binary())
+        self.assertTrue(x.is_integer())
         self.assertFalse(x.is_continuous())
 
         self.assertRaises(ValueError, optmod.Variable, 'x', 0., None, 'foo')
 
-        x = optmod.Variable('x', shape=(2,3), type='binary')
+        x = optmod.Variable('x', shape=(2,3), type='integer')
         self.assertTupleEqual(x.shape, (2,3))
         for i in range(2):
             for j in range(3):
-                self.assertTrue(x[i,j].is_binary())
+                self.assertTrue(x[i,j].is_integer())
                 self.assertFalse(x[i,j].is_continuous())
 
     def test_construction(self):
@@ -79,15 +79,15 @@ class TestVariables(unittest.TestCase):
 
         x = optmod.variable.VariableScalar()
         self.assertTrue(x.is_continuous())
-        self.assertFalse(x.is_binary())
+        self.assertFalse(x.is_integer())
 
         x = optmod.variable.VariableScalar(type='continuous')
         self.assertTrue(x.is_continuous())
-        self.assertFalse(x.is_binary())
+        self.assertFalse(x.is_integer())
 
-        x = optmod.variable.VariableScalar(type='binary')
+        x = optmod.variable.VariableScalar(type='integer')
         self.assertFalse(x.is_continuous())
-        self.assertTrue(x.is_binary())
+        self.assertTrue(x.is_integer())
 
         self.assertRaises(ValueError, optmod.variable.VariableScalar, 'var', 0., 'foo')
 

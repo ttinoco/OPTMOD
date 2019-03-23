@@ -243,7 +243,7 @@ class Problem(object):
         p.u = u
         p.l = l
 
-        p.P = np.array([vars[i].is_binary() for i in range(num_vars)], dtype=bool)
+        p.P = np.array([vars[i].is_integer() for i in range(num_vars)], dtype=bool)
 
         p.x = var_values
 
@@ -268,7 +268,7 @@ class Problem(object):
 
         # Properties (var types)
         if np.any(p.P):
-            p.properties.append(OptProblem.PROP_VAR_BINARY)
+            p.properties.append(OptProblem.PROP_VAR_INTEGER)
         else:
             p.properties.append(OptProblem.PROP_VAR_CONTINUOUS)
 
@@ -391,6 +391,10 @@ class Problem(object):
             solver = optalg.opt_solver.OptSolverClp()
         elif solver == 'cbc':
             solver = optalg.opt_solver.OptSolverCbc()
+        elif solver == 'clp_cmd':
+            solver = optalg.opt_solver.OptSolverClpCMD()
+        elif solver == 'cbc_cmd':
+            solver = optalg.opt_solver.OptSolverCbcCMD()
         elif solver == 'iqp':
             solver = optalg.opt_solver.OptSolverIQP()
         elif solver == 'nr':

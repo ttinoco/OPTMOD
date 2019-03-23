@@ -6,7 +6,7 @@ class VariableScalar(Expression):
 
     def __init__(self, name='var', value=0., type='continuous'):
 
-        if type not in ['binary', 'continuous']:
+        if type not in ['integer', 'continuous']:
             raise ValueError('invalid variable type')
         
         Expression.__init__(self)
@@ -65,9 +65,9 @@ class VariableScalar(Expression):
 
         return self.type == 'continuous'
 
-    def is_binary(self):
+    def is_integer(self):
 
-        return self.type == 'binary'
+        return self.type == 'integer'
 
     def set_value(self, val):
 

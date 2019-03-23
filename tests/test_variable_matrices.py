@@ -48,13 +48,13 @@ class TestVariableMatrices(unittest.TestCase):
         for i in range(2):
             for j in range(3):
                 self.assertTrue(x[i,j].is_continuous())
-                self.assertFalse(x[i,j].is_binary())
+                self.assertFalse(x[i,j].is_integer())
 
-        x = optmod.variable.VariableMatrix(name='x', shape=(2,3), type='binary')
+        x = optmod.variable.VariableMatrix(name='x', shape=(2,3), type='integer')
         for i in range(2):
             for j in range(3):
                 self.assertFalse(x[i,j].is_continuous())
-                self.assertTrue(x[i,j].is_binary())        
+                self.assertTrue(x[i,j].is_integer())        
 
     def test_get_variables(self):
 

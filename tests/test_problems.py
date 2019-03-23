@@ -159,7 +159,7 @@ class TestProblems(unittest.TestCase):
         temp[index_s3] = 0
         self.assertTrue(np.all(std_prob.l == temp))
 
-        # binary flags
+        # integer flags
         self.assertTrue(isinstance(std_prob.P, np.ndarray))
         self.assertEqual(std_prob.P.size, 5)
         self.assertNotEqual(std_prob.P.dtype, int)
@@ -404,8 +404,8 @@ class TestProblems(unittest.TestCase):
 
     def test_solve_MILP(self):
 
-        x1 = optmod.Variable('x1', type='binary')
-        x2 = optmod.Variable('x2', type='binary')
+        x1 = optmod.Variable('x1', type='integer')
+        x2 = optmod.Variable('x2', type='integer')
         x3 = optmod.Variable('x3')
         x4 = optmod.Variable('x4')
 
@@ -419,7 +419,7 @@ class TestProblems(unittest.TestCase):
 
         # std prob
         std_prob = p.__get_std_problem__()
-        self.assertListEqual(std_prob.properties, ['linear', 'binary', 'optimization'])
+        self.assertListEqual(std_prob.properties, ['linear', 'integer', 'optimization'])
         
         self.assertRaises(TypeError, p.solve, 'ipopt')
         self.assertRaises(TypeError, p.solve, 'augl')
