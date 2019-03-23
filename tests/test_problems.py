@@ -272,6 +272,50 @@ class TestProblems(unittest.TestCase):
         self.assertAlmostEqual(x.get_value(), 100, places=4)
         self.assertAlmostEqual(y.get_value(), 170, places=4)
 
+    def test_solve_LP_clp(self):
+
+        x = optmod.Variable('x')
+        y = optmod.Variable('y')
+
+        # Problem
+        p = optmod.Problem(objective=maximize(-2*x+5*y),
+                           constraints=[100 <= x,
+                                        x <= 200,
+                                        80 <= y,
+                                        y <= 170,
+                                        y >= -x + 200])
+
+        try:
+            status = p.solve(solver='clp', parameters={'quiet': True})
+        except optalg.opt_solver.OptSolverError_NotAvailable:
+            raise unittest.SkipTest('clp not available')
+
+        self.assertEqual(status, 'solved')
+        self.assertAlmostEqual(x.get_value(), 100, places=4)
+        self.assertAlmostEqual(y.get_value(), 170, places=4)
+
+    def test_solve_LP_clp_cmd(self):
+
+        x = optmod.Variable('x')
+        y = optmod.Variable('y')
+
+        # Problem
+        p = optmod.Problem(objective=maximize(-2*x+5*y),
+                           constraints=[100 <= x,
+                                        x <= 200,
+                                        80 <= y,
+                                        y <= 170,
+                                        y >= -x + 200])
+
+        try:
+            status = p.solve(solver='clp_cmd', parameters={'quiet': True})
+        except optalg.opt_solver.OptSolverError_NotAvailable:
+            raise unittest.SkipTest('clp cmd not available')
+
+        self.assertEqual(status, 'solved')
+        self.assertAlmostEqual(x.get_value(), 100, places=4)
+        self.assertAlmostEqual(y.get_value(), 170, places=4)
+
     def test_solve_QP(self):
 
         x = optmod.Variable('x')
@@ -403,7 +447,7 @@ class TestProblems(unittest.TestCase):
         self.assertAlmostEqual(x3.get_value(), 3.8211503, places=3)
         self.assertAlmostEqual(x4.get_value(), 1.3794082, places=3)
 
-    def test_solve_MILP(self):
+    def test_solve_MILP_cbc(self):
 
         x1 = optmod.Variable('x1', type='integer')
         x2 = optmod.Variable('x2', type='integer')
@@ -430,7 +474,7 @@ class TestProblems(unittest.TestCase):
         try:
             status = p.solve('cbc', parameters={'quiet': True})
         except optalg.opt_solver.OptSolverError_NotAvailable:
-            raise unittest.SkipTest('no cbc')
+            raise unittest.SkipTest('cbc not available')
 
         self.assertEqual(status, 'solved')
         self.assertEqual(x1.get_value(), 1.)
@@ -442,12 +486,36 @@ class TestProblems(unittest.TestCase):
         try:
             status = p.solve('cbc', parameters={'quiet': True})
         except optalg.opt_solver.OptSolverError_NotAvailable:
-            raise unittest.SkipTest('no cbc')
+            raise unittest.SkipTest('cbc not available')
 
         self.assertEqual(status, 'solved')
         self.assertEqual(x1.get_value(), 4.)
         self.assertEqual(x2.get_value(), 4.5)
 
+    def test_solve_MILP_cbc_cmd(self):
+
+        x1 = optmod.Variable('x1', type='integer')
+        x2 = optmod.Variable('x2', type='integer')
+        x3 = optmod.Variable('x3')
+        x4 = optmod.Variable('x4')
+
+        obj = -x1-x2
+        constr = [-2*x1+2*x2+x3 == 1,
+                  -8*x1+10*x2+x4 == 13,
+                  x4 >= 0,
+                  x3 <= 0]
+        
+        p = optmod.Problem(minimize(obj), constr)
+
+        try:
+            status = p.solve('cbc_cmd', parameters={'quiet': True})
+        except optalg.opt_solver.OptSolverError_NotAvailable:
+            raise unittest.SkipTest('cbc cmd not available')
+
+        self.assertEqual(status, 'solved')
+        self.assertEqual(x1.get_value(), 1.)
+        self.assertEqual(x2.get_value(), 2.)
+        
     def test_solve_feasibility(self):
 
         x = optmod.Variable('x', value=1.)
