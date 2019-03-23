@@ -1,11 +1,11 @@
 import time
-import optmod
 import numpy as np
+from optmod import Variable, sin, cos, sum
 
-x = optmod.Variable(name='x', value=np.random.randn(4,3))
-y = optmod.Variable(name='y', value=10.)
+x = Variable(name='x', value=np.random.randn(4,3))
+y = Variable(name='y', value=10.)
 
-f = optmod.sin(3*x+10.)*optmod.cos(y-optmod.sum(x*y))
+f = sin(3*x+10.)*cos(y-sum(x*y))
 
 vars = list(x.get_variables())+[y]
 
