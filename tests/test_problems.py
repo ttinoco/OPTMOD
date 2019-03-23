@@ -1,4 +1,5 @@
 import optmod
+import optalg
 import unittest
 import numpy as np
 from numpy.linalg import norm
@@ -336,7 +337,7 @@ class TestProblems(unittest.TestCase):
 
         try:
             status = p.solve(solver='ipopt', parameters={'quiet': True}, fast_evaluator=True)
-        except ImportError:
+        except optalg.opt_solver.OptSolverError_NotAvailable:
             raise unittest.SkipTest('ipopt not available')
         
         self.assertEqual(status, 'solved')
@@ -378,7 +379,7 @@ class TestProblems(unittest.TestCase):
 
         try:
             status = p.solve(solver='ipopt', parameters={'quiet': True}, fast_evaluator=True)
-        except ImportError:
+        except optalg.opt_solver.OptSolverError_NotAvailable:
             raise unittest.SkipTest('ipopt not available')
 
         self.assertEqual(status, 'solved')
@@ -428,7 +429,7 @@ class TestProblems(unittest.TestCase):
 
         try:
             status = p.solve('cbc', parameters={'quiet': True})
-        except ImportError:
+        except optalg.opt_solver.OptSolverError_NotAvailable:
             raise unittest.SkipTest('no cbc')
 
         self.assertEqual(status, 'solved')
@@ -440,7 +441,7 @@ class TestProblems(unittest.TestCase):
 
         try:
             status = p.solve('cbc', parameters={'quiet': True})
-        except ImportError:
+        except optalg.opt_solver.OptSolverError_NotAvailable:
             raise unittest.SkipTest('no cbc')
 
         self.assertEqual(status, 'solved')
