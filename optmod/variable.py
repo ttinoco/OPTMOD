@@ -2,6 +2,18 @@ import numpy as np
 from . import coptmod
 from .expression import Expression, ExpressionMatrix, make_Expression
 
+class VariableDict(dict):
+
+    def __init__(self, keys, name='var', value=None, type='continuous'):
+
+        if value is None:
+            value = {}
+
+        for key in keys:
+            self[key] = VariableScalar(name=name+'_%s' %key,
+                                       value=value[key] if (value is not None and key in value) else 0.,
+                                       type=type)
+
 class VariableScalar(Expression):
 
     def __init__(self, name='var', value=0., type='continuous'):
