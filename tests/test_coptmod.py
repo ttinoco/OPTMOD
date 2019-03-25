@@ -23,8 +23,8 @@ class TestCoptmod(unittest.TestCase):
         
     def test_evaluator_construct(self):
         
-        x = optmod.Variable(name='x', value=3.)
-        y = optmod.Variable(name='y', value=4.)
+        x = optmod.VariableScalar(name='x', value=3.)
+        y = optmod.VariableScalar(name='y', value=4.)
 
         f = 4*(x + 1) + optmod.sin(-y)
 
@@ -46,8 +46,8 @@ class TestCoptmod(unittest.TestCase):
 
     def test_evaluator_dynamic_resize(self):
 
-        x = optmod.Variable(name='x', value=3.)
-        y = optmod.Variable(name='y', value=4.)
+        x = optmod.VariableScalar(name='x', value=3.)
+        y = optmod.VariableScalar(name='y', value=4.)
 
         f = 4*(x + 1) + optmod.sin(-y)
 
@@ -69,8 +69,8 @@ class TestCoptmod(unittest.TestCase):
 
     def test_evaluator_eval_single_output(self):
 
-        x = optmod.Variable(name='x', value=3.)
-        y = optmod.Variable(name='y', value=4.)
+        x = optmod.VariableScalar(name='x', value=3.)
+        y = optmod.VariableScalar(name='y', value=4.)
 
         # var
         f = x
@@ -155,8 +155,8 @@ class TestCoptmod(unittest.TestCase):
         
     def test_evaluator_eval_multi_output(self):
 
-        x = optmod.Variable(name='x', value=3.)
-        y = optmod.Variable(name='y', value=4.)
+        x = optmod.VariableScalar(name='x', value=3.)
+        y = optmod.VariableScalar(name='y', value=4.)
 
         # var
         f1 = 3*(x+optmod.sin(y))

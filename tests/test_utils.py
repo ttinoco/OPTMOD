@@ -8,8 +8,8 @@ class TestUtils(unittest.TestCase):
 
         r = np.random.randn(3,2)
 
-        x = optmod.Variable('x', value=4.)
-        y = optmod.Variable('y', value=r)
+        x = optmod.VariableScalar('x', value=4.)
+        y = optmod.VariableMatrix('y', value=r)
 
         self.assertTupleEqual(y.shape, (3,2))
         self.assertTrue(np.all(y.get_value() == r))

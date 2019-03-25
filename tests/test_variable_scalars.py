@@ -2,67 +2,7 @@ import optmod
 import unittest
 import numpy as np
 
-class TestVariables(unittest.TestCase):
-
-    def test_user_function(self):
-
-        x = optmod.Variable()
-        self.assertTrue(isinstance(x, optmod.variable.VariableScalar))
-        self.assertEqual(x.name, 'var')
-        self.assertEqual(x.value, 0.)
-        self.assertEqual(x.type, 'continuous')
-        
-        x = optmod.Variable(name='x', value=2., type='integer')
-        self.assertTrue(isinstance(x, optmod.variable.VariableScalar))
-        self.assertEqual(x.name, 'x')
-        self.assertEqual(x.value, 2.)
-        self.assertEqual(x.type, 'integer')
-        self.assertTrue(x.is_integer())
-
-        x = optmod.Variable('x', None, (3,))
-        self.assertTupleEqual(x.shape, (3,1))
-        
-        x = optmod.Variable(name='x', shape=(3,2))
-        self.assertTrue(isinstance(x, optmod.variable.VariableMatrix))
-        val = x.get_value()
-        self.assertTrue(isinstance(val, np.matrix))
-        self.assertTupleEqual(val.shape, x.shape)
-        self.assertTupleEqual(val.shape, (3,2))
-        self.assertTrue(np.all(val == np.zeros((3,2))))
-
-        self.assertRaises(ValueError, optmod.Variable, 'x', np.zeros((3,2)), (4,2))
-
-        x = optmod.Variable(name='x', value=[[1,2,3],[4,5,6]])
-        self.assertTrue(isinstance(x, optmod.variable.VariableMatrix))
-        val = x.get_value()
-        self.assertTrue(isinstance(val, np.matrix))
-        self.assertTupleEqual(val.shape, x.shape)
-        self.assertTupleEqual(val.shape, (2,3))
-        self.assertTrue(np.all(val == np.array([[1,2,3],[4,5,6]])))
-        for i in range(2):
-            for j in range(3):
-                self.assertFalse(x[i,j].is_integer())
-                self.assertTrue(x[i,j].is_continuous())                              
-        
-        x = optmod.Variable(name='x', shape=(1,3), value=[[1,2,3]])
-        
-        x = optmod.Variable('x', [[3,4,5]], (3,))
-        self.assertTupleEqual(x.shape, (3,1))
-
-        x = optmod.Variable(type='integer')
-        self.assertEqual(x.value, 0.)
-        self.assertEqual(x.name, 'var')
-        self.assertTrue(x.is_integer())
-        self.assertFalse(x.is_continuous())
-
-        self.assertRaises(ValueError, optmod.Variable, 'x', 0., None, 'foo')
-
-        x = optmod.Variable('x', shape=(2,3), type='integer')
-        self.assertTupleEqual(x.shape, (2,3))
-        for i in range(2):
-            for j in range(3):
-                self.assertTrue(x[i,j].is_integer())
-                self.assertFalse(x[i,j].is_continuous())
+class TestVariableScalars(unittest.TestCase):
 
     def test_construction(self):
 
@@ -75,6 +15,27 @@ class TestVariables(unittest.TestCase):
         self.assertEqual(x.value, 3.)
         self.assertTrue(isinstance(x.value, np.float64))
 
+        x = optmod.VariableScalar()
+        self.assertTrue(isinstance(x, optmod.variable.VariableScalar))
+        self.assertEqual(x.name, 'var')
+        self.assertEqual(x.value, 0.)
+        self.assertEqual(x.type, 'continuous')
+        
+        x = optmod.VariableScalar(name='x', value=2., type='integer')
+        self.assertTrue(isinstance(x, optmod.variable.VariableScalar))
+        self.assertEqual(x.name, 'x')
+        self.assertEqual(x.value, 2.)
+        self.assertEqual(x.type, 'integer')
+        self.assertTrue(x.is_integer())
+
+        x = optmod.VariableScalar(type='integer')
+        self.assertEqual(x.value, 0.)
+        self.assertEqual(x.name, 'var')
+        self.assertTrue(x.is_integer())
+        self.assertFalse(x.is_continuous())
+
+        self.assertRaises(ValueError, optmod.VariableScalar, 'x', np.random.randn(2,3))
+        
     def test_type(self):
 
         x = optmod.variable.VariableScalar()
@@ -93,7 +54,7 @@ class TestVariables(unittest.TestCase):
 
     def test_get_variables(self):
 
-        x = optmod.Variable(name='x')
+        x = optmod.VariableScalar(name='x')
 
         self.assertSetEqual(x.get_variables(), set([x]))
         

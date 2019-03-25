@@ -7,8 +7,8 @@ class TestExpressions(unittest.TestCase):
 
     def test_get_variables(self):
 
-        x = optmod.Variable(name='x', shape=(2,3))
-        y = optmod.Variable(name='y')
+        x = optmod.VariableMatrix(name='x', shape=(2,3))
+        y = optmod.VariableScalar(name='y')
 
         f = optmod.sin(x*3) + optmod.cos(y+10.)*x
 
@@ -20,8 +20,8 @@ class TestExpressions(unittest.TestCase):
 
     def test_scalar_get_fast_evaluator(self):
 
-        x = optmod.Variable(name='x', value=2.)
-        y = optmod.Variable(name='y', value=3.)
+        x = optmod.VariableScalar(name='x', value=2.)
+        y = optmod.VariableScalar(name='y', value=3.)
         
         f = 3*(x+3)+optmod.sin(y+4*x)
 
@@ -47,8 +47,8 @@ class TestExpressions(unittest.TestCase):
     def test_matrix_get_fast_evalulator(self):
 
         xval = np.random.randn(4,3)
-        x = optmod.Variable(name='x', value=xval)
-        y = optmod.Variable(name='y', value=10.)
+        x = optmod.VariableMatrix(name='x', value=xval)
+        y = optmod.VariableScalar(name='y', value=10.)
 
         self.assertTupleEqual(x.shape, (4,3))
 

@@ -245,8 +245,8 @@ class TestProblems(unittest.TestCase):
 
     def test_solve_LP(self):
 
-        x = optmod.Variable('x')
-        y = optmod.Variable('y')
+        x = optmod.VariableScalar('x')
+        y = optmod.VariableScalar('y')
 
         # Problem
         p = optmod.Problem(objective=maximize(-2*x+5*y),
@@ -274,8 +274,8 @@ class TestProblems(unittest.TestCase):
 
     def test_solve_LP_clp(self):
 
-        x = optmod.Variable('x')
-        y = optmod.Variable('y')
+        x = optmod.VariableScalar('x')
+        y = optmod.VariableScalar('y')
 
         # Problem
         p = optmod.Problem(objective=maximize(-2*x+5*y),
@@ -296,8 +296,8 @@ class TestProblems(unittest.TestCase):
 
     def test_solve_LP_clp_cmd(self):
 
-        x = optmod.Variable('x')
-        y = optmod.Variable('y')
+        x = optmod.VariableScalar('x')
+        y = optmod.VariableScalar('y')
 
         # Problem
         p = optmod.Problem(objective=maximize(-2*x+5*y),
@@ -318,8 +318,8 @@ class TestProblems(unittest.TestCase):
 
     def test_solve_QP(self):
 
-        x = optmod.Variable('x')
-        y = optmod.Variable('y')
+        x = optmod.VariableScalar('x')
+        y = optmod.VariableScalar('y')
 
         f = 3*x*x+y*y+2*x*y+x+6*y+2
 
@@ -366,7 +366,7 @@ class TestProblems(unittest.TestCase):
 
         n = 5
 
-        x = optmod.Variable(name='x', value=[1.3, 0.7, 0.8, 1.9, 1.2], shape=(5,1))
+        x = optmod.VariableMatrix(name='x', value=[1.3, 0.7, 0.8, 1.9, 1.2], shape=(5,1))
 
         f = 0.
         for i in range(0, n-1):
@@ -401,10 +401,10 @@ class TestProblems(unittest.TestCase):
         # Hock-Schittkowski
         # Problem 71
         
-        x1 = optmod.Variable('x1', value=1)
-        x2 = optmod.Variable('x2', value=5)
-        x3 = optmod.Variable('x3', value=5)
-        x4 = optmod.Variable('x4', value=1)
+        x1 = optmod.VariableScalar('x1', value=1)
+        x2 = optmod.VariableScalar('x2', value=5)
+        x3 = optmod.VariableScalar('x3', value=5)
+        x4 = optmod.VariableScalar('x4', value=1)
 
         f = x1*x4*(x1+x2+x3) + x3
         
@@ -449,10 +449,10 @@ class TestProblems(unittest.TestCase):
 
     def test_solve_MILP_cbc(self):
 
-        x1 = optmod.Variable('x1', type='integer')
-        x2 = optmod.Variable('x2', type='integer')
-        x3 = optmod.Variable('x3')
-        x4 = optmod.Variable('x4')
+        x1 = optmod.VariableScalar('x1', type='integer')
+        x2 = optmod.VariableScalar('x2', type='integer')
+        x3 = optmod.VariableScalar('x3')
+        x4 = optmod.VariableScalar('x4')
 
         obj = -x1-x2
         constr = [-2*x1+2*x2+x3 == 1,
@@ -494,10 +494,10 @@ class TestProblems(unittest.TestCase):
 
     def test_solve_MILP_cbc_cmd(self):
 
-        x1 = optmod.Variable('x1', type='integer')
-        x2 = optmod.Variable('x2', type='integer')
-        x3 = optmod.Variable('x3')
-        x4 = optmod.Variable('x4')
+        x1 = optmod.VariableScalar('x1', type='integer')
+        x2 = optmod.VariableScalar('x2', type='integer')
+        x3 = optmod.VariableScalar('x3')
+        x4 = optmod.VariableScalar('x4')
 
         obj = -x1-x2
         constr = [-2*x1+2*x2+x3 == 1,
@@ -518,7 +518,7 @@ class TestProblems(unittest.TestCase):
         
     def test_solve_feasibility(self):
 
-        x = optmod.Variable('x', value=1.)
+        x = optmod.VariableScalar('x', value=1.)
 
         constr = [x*optmod.cos(x)-x*x == 0]
         

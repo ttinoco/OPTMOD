@@ -15,10 +15,10 @@ Fast evaluators can be constructed for expressions. These evaluators evaluate th
 ```python
 import time
 import numpy as np
-from optmod import Variable, sin, cos, sum
+from optmod import VariableMatrix, VariableScalar, sin, cos, sum
 
-x = Variable(name='x', value=np.random.randn(4,3))
-y = Variable(name='y', value=10.)
+x = VariableMatrix(name='x', value=np.random.randn(4,3))
+y = VariableScalar(name='y', value=10.)
 
 f = sin(3*x+10.)*cos(y-sum(x*y))
 
@@ -49,12 +49,12 @@ speedup: 533.78
 ### Example NLP
 
 ```python
-from optmod import Variable, Problem, minimize
+from optmod import VariableScalar, Problem, minimize
 
-x1 = Variable('x1', value=1)
-x2 = Variable('x2', value=5)
-x3 = Variable('x3', value=5)
-x4 = Variable('x4', value=1)
+x1 = VariableScalar('x1', value=1)
+x2 = VariableScalar('x2', value=5)
+x3 = VariableScalar('x3', value=5)
+x4 = VariableScalar('x4', value=1)
 
 f = x1*x4*(x1+x2+x3) + x3
 
@@ -67,7 +67,7 @@ constraints = [x1*x2*x3*x4 >= 25,
 
 p = Problem(minimize(f), constraints)
 
-p.solve(solver='ipopt', parameters={'quiet': True})
+p.solve(solver='ipopt', parameters={'quiet': False})
 
 print(f.get_value())
 
@@ -87,12 +87,12 @@ x4, 1.379
 ### Example MILP
 
 ```python
-from optmod import Variable, Problem, minimize
+from optmod import VariableScalar, Problem, minimize
 
-x1 = Variable('x1', type='integer')
-x2 = Variable('x2', type='integer')
-x3 = Variable('x3')
-x4 = Variable('x4')
+x1 = VariableScalar('x1', type='integer')
+x2 = VariableScalar('x2', type='integer')
+x3 = VariableScalar('x3')
+x4 = VariableScalar('x4')
 
 f = -x1-x2
 constraints = [-2*x1+2*x2+x3 == 1,
@@ -122,9 +122,9 @@ x4, 1.0
 ### Example Newton-Raphson
 
 ```python
-from optmod import Variable, Problem, EmptyObjective, cos
+from optmod import VariableScalar, Problem, EmptyObjective, cos
 
-x = Variable('x', value=1.)
+x = VariableScalar('x', value=1.)
 
 constraints = [x*cos(x)-x*x == 0]
         

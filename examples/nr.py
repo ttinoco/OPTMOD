@@ -1,6 +1,6 @@
-from optmod import Variable, Problem, EmptyObjective, cos
+from optmod import VariableScalar, Problem, EmptyObjective, cos
 
-x = Variable('x', value=1.)
+x = VariableScalar('x', value=1.)
 
 constraints = [x*cos(x)-x*x == 0]
         

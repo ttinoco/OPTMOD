@@ -6,7 +6,7 @@ from . import function
 from . import problem
 from . import coptmod
 
-from .variable import Variable
+from .variable import VariableScalar, VariableMatrix
 from .function import sin, cos
 from .problem import minimize, maximize, EmptyObjective, Problem
 from .utils import sum

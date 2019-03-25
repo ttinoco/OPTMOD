@@ -1,9 +1,9 @@
 import time
 import numpy as np
-from optmod import Variable, sin, cos, sum
+from optmod import VariableMatrix, VariableScalar, sin, cos, sum
 
-x = Variable(name='x', value=np.random.randn(4,3))
-y = Variable(name='y', value=10.)
+x = VariableMatrix(name='x', value=np.random.randn(4,3))
+y = VariableScalar(name='y', value=10.)
 
 f = sin(3*x+10.)*cos(y-sum(x*y))
 

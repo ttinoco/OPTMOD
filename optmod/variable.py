@@ -8,6 +8,9 @@ class VariableScalar(Expression):
 
         if type not in ['integer', 'continuous']:
             raise ValueError('invalid variable type')
+
+        if not np.isscalar(value):
+            raise ValueError('value is not a scalar')
         
         Expression.__init__(self)
 
@@ -90,7 +93,7 @@ class VariableMatrix(ExpressionMatrix):
             shape = value.shape
 
         if len(shape) == 1:
-            shape = shape[0],1
+            shape = shape[0], 1
 
         if value.shape != shape:
             value = value.reshape(shape)
@@ -114,16 +117,3 @@ class VariableMatrix(ExpressionMatrix):
             for j in range(self.shape[1]):
                 self.data[i,j].set_value(val[i,j])
 
-def Variable(name='var', value=None, shape=None, type='continuous'):
-
-    mat = False
-    if shape is not None:
-        mat = True
-
-    if (value is not None) and (not np.isscalar(value)):
-        mat = True
-
-    if not mat:
-        return VariableScalar(name=name, value=value, type=type)
-    else:
-        return VariableMatrix(name=name, value=value, shape=shape, type=type)
