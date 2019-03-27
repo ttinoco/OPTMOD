@@ -1,8 +1,8 @@
 import types
 import numpy as np
 from . import coptmod
-from .constraint import Constraint
 from scipy.sparse import coo_matrix
+from .constraint import Constraint, ConstraintArray
 from .expression import make_Expression, ExpressionMatrix
 
 class Objective(object):
@@ -78,16 +78,13 @@ class Problem(object):
     def __init__(self, objective=None, constraints=[]):
 
         if objective is None:
-            objective =  EmptyObjective()
+            objective = EmptyObjective()
 
         if not isinstance(objective, Objective):
             raise TypeError('invalid objective type')
-        for c in constraints:
-            if not isinstance(c, Constraint):
-                raise TypeError('invalid constraint type')
 
         self.objective = objective
-        self.constraints = sum([c.flatten().tolist() for c in constraints], [])
+        self.constraints = sum([ConstraintArray(c).flatten().tolist() for c in constraints], [])
         
     def __repr__(self):
 

@@ -1,5 +1,4 @@
 import optmod
-import optalg
 import unittest
 import numpy as np
 from numpy.linalg import norm
@@ -45,6 +44,22 @@ class TestProblems(unittest.TestCase):
 
         self.assertRaises(TypeError, optmod.Problem, objective=f)
         self.assertRaises(TypeError, optmod.Problem, None, ['foo'])
+
+    def test_construction_constr_not_flat(self):
+
+        x = optmod.variable.VariableMatrix('x', value=np.random.randn(3,2))
+        y = optmod.variable.VariableScalar('y')
+
+        c0 = x == 0
+        self.assertTrue(isinstance(c0, optmod.constraint.ConstraintArray))
+
+        c1 = y == 2
+
+        p = optmod.Problem(EmptyObjective(), constraints=[c0, [[c1]]])
+        
+        self.assertEqual(len(p.constraints), 7)
+        for c in p.constraints:
+            self.assertTrue(isinstance(c, optmod.constraint.Constraint))
 
     def test_std_components(self):
 
@@ -287,7 +302,7 @@ class TestProblems(unittest.TestCase):
 
         try:
             status = p.solve(solver='clp', parameters={'quiet': True})
-        except optalg.opt_solver.OptSolverError_NotAvailable:
+        except ImportError:
             raise unittest.SkipTest('clp not available')
 
         self.assertEqual(status, 'solved')
@@ -309,7 +324,7 @@ class TestProblems(unittest.TestCase):
 
         try:
             status = p.solve(solver='clp_cmd', parameters={'quiet': True})
-        except optalg.opt_solver.OptSolverError_NotAvailable:
+        except ImportError:
             raise unittest.SkipTest('clp cmd not available')
 
         self.assertEqual(status, 'solved')
@@ -381,7 +396,7 @@ class TestProblems(unittest.TestCase):
 
         try:
             status = p.solve(solver='ipopt', parameters={'quiet': True}, fast_evaluator=True)
-        except optalg.opt_solver.OptSolverError_NotAvailable:
+        except ImportError:
             raise unittest.SkipTest('ipopt not available')
         
         self.assertEqual(status, 'solved')
@@ -423,7 +438,7 @@ class TestProblems(unittest.TestCase):
 
         try:
             status = p.solve(solver='ipopt', parameters={'quiet': True}, fast_evaluator=True)
-        except optalg.opt_solver.OptSolverError_NotAvailable:
+        except ImportError:
             raise unittest.SkipTest('ipopt not available')
 
         self.assertEqual(status, 'solved')
@@ -465,15 +480,21 @@ class TestProblems(unittest.TestCase):
         # std prob
         std_prob = p.__get_std_problem__()
         self.assertListEqual(std_prob.properties, ['linear', 'integer', 'optimization'])
-        
-        self.assertRaises(TypeError, p.solve, 'ipopt')
+
+        try:
+            self.assertRaises(TypeError, p.solve, 'ipopt')
+        except ImportError:
+            raise unittest.SkipTest('ipopt not available')
         self.assertRaises(TypeError, p.solve, 'augl')
-        self.assertRaises(TypeError, p.solve, 'clp')
+        try:
+            self.assertRaises(TypeError, p.solve, 'clp')
+        except ImportError:
+            raise unittest.SkipTest('clp not available')
         self.assertRaises(TypeError, p.solve, 'inlp')
 
         try:
             status = p.solve('cbc', parameters={'quiet': True})
-        except optalg.opt_solver.OptSolverError_NotAvailable:
+        except ImportError:
             raise unittest.SkipTest('cbc not available')
 
         self.assertEqual(status, 'solved')
@@ -485,9 +506,9 @@ class TestProblems(unittest.TestCase):
 
         try:
             status = p.solve('cbc', parameters={'quiet': True})
-        except optalg.opt_solver.OptSolverError_NotAvailable:
+        except ImportError:
             raise unittest.SkipTest('cbc not available')
-
+        
         self.assertEqual(status, 'solved')
         self.assertEqual(x1.get_value(), 4.)
         self.assertEqual(x2.get_value(), 4.5)
@@ -509,7 +530,7 @@ class TestProblems(unittest.TestCase):
 
         try:
             status = p.solve('cbc_cmd', parameters={'quiet': True})
-        except optalg.opt_solver.OptSolverError_NotAvailable:
+        except ImportError:
             raise unittest.SkipTest('cbc cmd not available')
 
         self.assertEqual(status, 'solved')
@@ -528,8 +549,14 @@ class TestProblems(unittest.TestCase):
         std_prob = p.__get_std_problem__()
         self.assertListEqual(std_prob.properties, ['nonlinear', 'continuous', 'feasibility'])
 
-        self.assertRaises(TypeError, p.solve, 'clp')
-        self.assertRaises(TypeError, p.solve, 'cbc')
+        try:
+            self.assertRaises(TypeError, p.solve, 'clp')
+        except ImportError:
+            raise unittest.SkipTest('clp not available')
+        try:
+            self.assertRaises(TypeError, p.solve, 'cbc')
+        except ImportError:
+            raise unittest.SkipTest('cbc not available')
 
         status = p.solve('nr', parameters={'quiet': True, 'feastol': 1e-10})
         

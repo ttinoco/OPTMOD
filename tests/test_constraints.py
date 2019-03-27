@@ -130,6 +130,43 @@ class TestConstraints(unittest.TestCase):
                 self.assertTrue(cij.lhs.arguments[0] is z[i,j])
                 self.assertTrue(cij.rhs.arguments[0] is z[i,j])
 
+    def test_bad_array_construction(self):
+
+        x = optmod.VariableMatrix('x', np.random.randn(4,3))
+        y = optmod.VariableScalar('y', 5)
+
+        c0 = x == 1
+        c1 = y == 0
+
+        c = optmod.constraint.ConstraintArray(c0)
+        c = optmod.constraint.ConstraintArray(c1)
+        c = optmod.constraint.ConstraintArray([c1])
+        
+        self.assertRaises(TypeError, optmod.constraint.ConstraintArray, [x, y])
+        self.assertRaises(TypeError, optmod.constraint.ConstraintArray, [c0, c1])
+        self.assertRaises(TypeError, optmod.constraint.ConstraintArray, ['foo'])
+        
+    def test_flatten_to_list(self):
+
+        x = optmod.VariableMatrix('x', np.random.randn(4,3))
+
+        c = x == 1
+        self.assertTrue(isinstance(c, optmod.constraint.ConstraintArray))
+
+        self.assertTupleEqual(c.shape, (4,3))
+
+        cf = c.flatten()
+        self.assertTrue(isinstance(c, optmod.constraint.ConstraintArray))
+        self.assertTupleEqual(cf.shape, (12,))
+
+        cfl = cf.tolist()
+        self.assertTrue(isinstance(cfl, list))
+        self.assertEqual(len(cfl), 12)
+        for i in range(4):
+            for j in range(3):
+                self.assertTrue(isinstance(cfl[i*3+j], optmod.constraint.Constraint))
+                self.assertTrue(cfl[i*3+j].lhs is x[i,j])
+
     def test_less_equal_contruction(self):
 
         x = optmod.variable.VariableScalar('x')

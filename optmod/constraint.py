@@ -148,38 +148,9 @@ class Constraint(object):
 
         return self.op != '=='
 
-    #def is_bound(self):
-    #
-    #    return (self.is_inequality() and
-    #            ((self.lhs.is_variable() and self.rhs.is_constant()) or
-    #             (self.lhs.is_constant() and self.rhs.is_variable())))
-
-    #def is_linear(self):
-    #pass
-
     def tolist(self):
 
         return [self]
-
-"""    
-class equal(Constraint):
-
-    def __init__(self, lhs, rhs):
-
-        Constraint.__init__(self, lhs, '==', rhs)
-
-class less_equal(Constraint):
-
-    def __init__(self, lhs, rhs):
-
-        Constraint.__init__(self, lhs, '<=', rhs)
-
-class greater_equal(Constraint):
-
-    def __init__(self, lhs, rhs):
-
-        Constraint.__init__(self, lhs, '>=', rhs)
-"""
         
 class ConstraintArray(object):
 
@@ -197,12 +168,12 @@ class ConstraintArray(object):
             self.shape = self.data.shape
             
         elif obj is not None:
-            obj = np.asmatrix(obj)
+            obj = np.asarray(obj)
             def fn(x):
                 if isinstance(x, Constraint):
                     return x
                 else:
-                    raise ValueError('invalid object')
+                    raise TypeError('invalid object')
             self.data = np.vectorize(fn)(obj)
             self.shape = obj.shape
         
