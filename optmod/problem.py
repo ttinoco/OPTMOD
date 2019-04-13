@@ -392,12 +392,14 @@ class Problem(object):
             solver = optalg.opt_solver.OptSolverClpCMD()
         elif solver == 'cbc_cmd':
             solver = optalg.opt_solver.OptSolverCbcCMD()
+        elif solver == 'cplex_cmd':
+            solver = optalg.opt_solver.OptSolverCplexCMD()
         elif solver == 'iqp':
             solver = optalg.opt_solver.OptSolverIQP()
         elif solver == 'nr':
             solver = optalg.opt_solver.OptSolverNR()
         else:
-            raise ValueError('invalid solver')
+            raise ValueError('invalid solver %s' %solver)
 
         # Properties
         if not solver.supports_properties(std_prob.properties):

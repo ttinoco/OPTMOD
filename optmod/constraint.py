@@ -136,6 +136,17 @@ class Constraint(object):
 
         return self
 
+    def get_violation(self):
+
+        if self.op == '==':
+            return np.abs(self.lhs.get_value()-self.rhs.get_value())
+        elif self.op == '>=':
+            return np.maximum(-self.lhs.get_value()+self.rhs.get_value(), 0.)
+        elif self.op == '<=':
+            return np.maximum(self.lhs.get_value()-self.rhs.get_value(), 0.)
+        else:
+            raise RuntimeError('Invalid constraints')
+
     def get_variables(self):
 
         return self.lhs.get_variables().union(self.rhs.get_variables())

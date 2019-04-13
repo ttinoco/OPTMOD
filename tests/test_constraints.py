@@ -4,6 +4,35 @@ import numpy as np
 
 class TestConstraints(unittest.TestCase):
 
+    def test_violation(self):
+
+        x = optmod.variable.VariableScalar('x', value=2.)
+        y = optmod.variable.VariableScalar('y', value=3.)
+
+        c = x == y
+        self.assertEqual(c.get_violation(), 1.)
+
+        c = y == x
+        self.assertEqual(c.get_violation(), 1.)
+
+        c = x >= y
+        self.assertEqual(c.get_violation(), 1.)
+
+        c = y >= x
+        self.assertEqual(c.get_violation(), 0.)
+
+        c = x <= y
+        self.assertEqual(c.get_violation(), 0.)
+
+        c = y <= x
+        self.assertEqual(c.get_violation(), 1.)
+
+        c = 5 == x
+        self.assertEqual(c.get_violation(), 3.)
+
+        c = x == 5
+        self.assertEqual(c.get_violation(), 3.)
+
     def test_equal_contruction(self):
 
         x = optmod.variable.VariableScalar('x')

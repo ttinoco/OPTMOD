@@ -4,6 +4,15 @@ import numpy as np
 
 class TestVariableDicts(unittest.TestCase):
 
+    def test_construction_with_tuples(self):
+
+        x = optmod.VariableDict([(1,2), ('tt', 4)], name='x')
+
+        self.assertTrue(isinstance(x[(1,2)], optmod.VariableScalar))
+        self.assertTrue(isinstance(x[('tt',4)], optmod.VariableScalar))
+
+        self.assertRaises(KeyError, lambda a: x[a], 50)
+        
     def test_construction(self):
 
         x = optmod.VariableDict(['a', 'b'], name='foo')
@@ -41,4 +50,6 @@ class TestVariableDicts(unittest.TestCase):
         self.assertEqual(xb.value, 0.)
         self.assertTrue(xb.is_continuous())
         self.assertEqual(xb.name, 'bar_b')
+        
+
         

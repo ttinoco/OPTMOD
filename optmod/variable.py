@@ -10,7 +10,7 @@ class VariableDict(dict):
             value = {}
 
         for key in keys:
-            self[key] = VariableScalar(name=name+'_%s' %key,
+            self[key] = VariableScalar(name=name+'_%s' %(key,),
                                        value=value[key] if (value is not None and key in value) else 0.,
                                        type=type)
 
