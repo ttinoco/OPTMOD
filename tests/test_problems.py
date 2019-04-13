@@ -275,15 +275,19 @@ class TestProblems(unittest.TestCase):
         std_prob = p.__get_std_problem__()
         self.assertListEqual(std_prob.properties, ['linear', 'continuous', 'optimization'])
                 
-        status = p.solve(solver='inlp', parameters={'quiet': True})
+        info = p.solve(solver='inlp', parameters={'quiet': True})
 
-        self.assertEqual(status, 'solved')
+        self.assertTrue('iterations' in info)
+        self.assertTrue('time_problem' in info)
+        self.assertTrue('time_solver' in info)
+
+        self.assertEqual(info['status'], 'solved')
         self.assertAlmostEqual(x.get_value(), 100, places=4)
         self.assertAlmostEqual(y.get_value(), 170, places=4)
 
-        status = p.solve(solver='augl', parameters={'quiet': True})
+        info = p.solve(solver='augl', parameters={'quiet': True})
 
-        self.assertEqual(status, 'solved')
+        self.assertEqual(info['status'], 'solved')
         self.assertAlmostEqual(x.get_value(), 100, places=4)
         self.assertAlmostEqual(y.get_value(), 170, places=4)
 
@@ -301,11 +305,11 @@ class TestProblems(unittest.TestCase):
                                         y >= -x + 200])
 
         try:
-            status = p.solve(solver='clp', parameters={'quiet': True})
+            info = p.solve(solver='clp', parameters={'quiet': True})
         except ImportError:
             raise unittest.SkipTest('clp not available')
 
-        self.assertEqual(status, 'solved')
+        self.assertEqual(info['status'], 'solved')
         self.assertAlmostEqual(x.get_value(), 100, places=4)
         self.assertAlmostEqual(y.get_value(), 170, places=4)
 
@@ -323,11 +327,11 @@ class TestProblems(unittest.TestCase):
                                         y >= -x + 200])
 
         try:
-            status = p.solve(solver='clp_cmd', parameters={'quiet': True})
+            info = p.solve(solver='clp_cmd', parameters={'quiet': True})
         except ImportError:
             raise unittest.SkipTest('clp cmd not available')
 
-        self.assertEqual(status, 'solved')
+        self.assertEqual(info['status'], 'solved')
         self.assertAlmostEqual(x.get_value(), 100, places=4)
         self.assertAlmostEqual(y.get_value(), 170, places=4)
 
@@ -345,15 +349,15 @@ class TestProblems(unittest.TestCase):
         std_prob = p.__get_std_problem__()
         self.assertListEqual(std_prob.properties, ['nonlinear', 'continuous', 'optimization'])
                 
-        status = p.solve(solver='inlp', parameters={'quiet': True})
+        info = p.solve(solver='inlp', parameters={'quiet': True})
         
-        self.assertEqual(status, 'solved')
+        self.assertEqual(info['status'], 'solved')
         self.assertAlmostEqual(x.get_value(), 1.25, places=4)
         self.assertAlmostEqual(y.get_value(), -4.25, places=4)
 
-        status = p.solve(solver='augl', parameters={'quiet': True})
+        info = p.solve(solver='augl', parameters={'quiet': True})
         
-        self.assertEqual(status, 'solved')
+        self.assertEqual(info['status'], 'solved')
         self.assertAlmostEqual(x.get_value(), 1.25, places=4)
         self.assertAlmostEqual(y.get_value(), -4.25, places=4)
 
@@ -363,16 +367,16 @@ class TestProblems(unittest.TestCase):
                                         x >= 0,
                                         y >= 0])
 
-        status = p.solve(solver='inlp', parameters={'quiet': True})
+        info = p.solve(solver='inlp', parameters={'quiet': True})
 
-        self.assertEqual(status, 'solved')
+        self.assertEqual(info['status'], 'solved')
         self.assertAlmostEqual(x.get_value(), 0.5, places=4)
         self.assertAlmostEqual(y.get_value(), 1, places=4)
         self.assertAlmostEqual(f.get_value(), 11.25, places=4)
 
-        status = p.solve(solver='augl', parameters={'quiet': True})
+        info = p.solve(solver='augl', parameters={'quiet': True})
 
-        self.assertEqual(status, 'solved')
+        self.assertEqual(info['status'], 'solved')
         self.assertAlmostEqual(x.get_value(), 0.5, places=4)
         self.assertAlmostEqual(y.get_value(), 1, places=4)
         self.assertAlmostEqual(f.get_value(), 11.25, places=4)
@@ -395,19 +399,19 @@ class TestProblems(unittest.TestCase):
         self.assertListEqual(std_prob.properties, ['nonlinear', 'continuous', 'optimization'])
 
         try:
-            status = p.solve(solver='ipopt', parameters={'quiet': True}, fast_evaluator=True)
+            info = p.solve(solver='ipopt', parameters={'quiet': True}, fast_evaluator=True)
         except ImportError:
             raise unittest.SkipTest('ipopt not available')
         
-        self.assertEqual(status, 'solved')
+        self.assertEqual(info['status'], 'solved')
         self.assertAlmostEqual(f.get_value(), 0, places=4)
         self.assertLess(norm(x.get_value()-np.ones((5,1)), np.inf), 1e-2)
 
         x.set_value(np.matrix([1.3, 0.7, 0.8, 1.9, 1.2]).T)
 
-        status = p.solve(solver='ipopt', parameters={'quiet': True}, fast_evaluator=False)
+        info = p.solve(solver='ipopt', parameters={'quiet': True}, fast_evaluator=False)
 
-        self.assertEqual(status, 'solved')
+        self.assertEqual(info['status'], 'solved')
         self.assertAlmostEqual(f.get_value(), 0, places=4)
         self.assertLess(norm(x.get_value()-np.ones((5,1)), np.inf), 1e-2)
         
@@ -437,11 +441,11 @@ class TestProblems(unittest.TestCase):
         self.assertListEqual(std_prob.properties, ['nonlinear', 'continuous', 'optimization'])
 
         try:
-            status = p.solve(solver='ipopt', parameters={'quiet': True}, fast_evaluator=True)
+            info = p.solve(solver='ipopt', parameters={'quiet': True}, fast_evaluator=True)
         except ImportError:
             raise unittest.SkipTest('ipopt not available')
 
-        self.assertEqual(status, 'solved')
+        self.assertEqual(info['status'], 'solved')
         self.assertAlmostEqual(f.get_value(), 17.0140173, places=3)
         self.assertAlmostEqual(x1.get_value(), 1., places=3)
         self.assertAlmostEqual(x2.get_value(), 4.7429994, places=3)
@@ -453,9 +457,9 @@ class TestProblems(unittest.TestCase):
         x3.set_value(5.)
         x4.set_value(1.)
 
-        status = p.solve(solver='ipopt', parameters={'quiet': True}, fast_evaluator=False)
+        info = p.solve(solver='ipopt', parameters={'quiet': True}, fast_evaluator=False)
     
-        self.assertEqual(status, 'solved')
+        self.assertEqual(info['status'], 'solved')
         self.assertAlmostEqual(f.get_value(), 17.0140173, places=3)
         self.assertAlmostEqual(x1.get_value(), 1., places=3)
         self.assertAlmostEqual(x2.get_value(), 4.7429994, places=3)
@@ -493,11 +497,11 @@ class TestProblems(unittest.TestCase):
         self.assertRaises(TypeError, p.solve, 'inlp')
 
         try:
-            status = p.solve('cbc', parameters={'quiet': True})
+            info = p.solve('cbc', parameters={'quiet': True})
         except ImportError:
             raise unittest.SkipTest('cbc not available')
 
-        self.assertEqual(status, 'solved')
+        self.assertEqual(info['status'], 'solved')
         self.assertEqual(x1.get_value(), 1.)
         self.assertEqual(x2.get_value(), 2.)
 
@@ -505,11 +509,11 @@ class TestProblems(unittest.TestCase):
         x2.type = 'continuous'
 
         try:
-            status = p.solve('cbc', parameters={'quiet': True})
+            info = p.solve('cbc', parameters={'quiet': True})
         except ImportError:
             raise unittest.SkipTest('cbc not available')
         
-        self.assertEqual(status, 'solved')
+        self.assertEqual(info['status'], 'solved')
         self.assertEqual(x1.get_value(), 4.)
         self.assertEqual(x2.get_value(), 4.5)
 
@@ -529,11 +533,11 @@ class TestProblems(unittest.TestCase):
         p = optmod.Problem(minimize(obj), constr)
 
         try:
-            status = p.solve('cbc_cmd', parameters={'quiet': True})
+            info = p.solve('cbc_cmd', parameters={'quiet': True})
         except ImportError:
             raise unittest.SkipTest('cbc cmd not available')
 
-        self.assertEqual(status, 'solved')
+        self.assertEqual(info['status'], 'solved')
         self.assertEqual(x1.get_value(), 1.)
         self.assertEqual(x2.get_value(), 2.)
         
@@ -558,15 +562,15 @@ class TestProblems(unittest.TestCase):
         except ImportError:
             raise unittest.SkipTest('cbc not available')
 
-        status = p.solve('nr', parameters={'quiet': True, 'feastol': 1e-10})
+        info = p.solve('nr', parameters={'quiet': True, 'feastol': 1e-10})
         
-        self.assertEqual(status, 'solved')
+        self.assertEqual(info['status'], 'solved')
         self.assertAlmostEqual(x.get_value(), 0.739085133215161, places=7)
 
         x.value = 1.
         self.assertNotAlmostEqual(x.get_value(), 0.739085133215161, places=7)
 
-        status = p.solve('nr', parameters={'quiet': True, 'feastol': 1e-10}, fast_evaluator=False)
+        info = p.solve('nr', parameters={'quiet': True, 'feastol': 1e-10}, fast_evaluator=False)
 
-        self.assertEqual(status, 'solved')
+        self.assertEqual(info['status'], 'solved')
         self.assertAlmostEqual(x.get_value(), 0.739085133215161, places=7)

@@ -1,3 +1,4 @@
+import time
 import types
 import numpy as np
 from . import coptmod
@@ -380,7 +381,9 @@ class Problem(object):
             parameters = {}
 
         # Problem
+        t0 = time.time()
         std_prob = self.__get_std_problem__(fast_evaluator=fast_evaluator)
+        time_problem = time.time()-t0
 
         # Solver
         if solver == 'augl':
@@ -414,10 +417,12 @@ class Problem(object):
         solver.set_parameters(parameters)
 
         # Solve
+        t0 = time.time()
         try:
             solver.solve(std_prob)
         except optalg.opt_solver.OptSolverError:
             pass
+        time_solver = time.time()-t0
 
         # Get values
         x = solver.get_primal_variables()
@@ -425,5 +430,11 @@ class Problem(object):
             for i, var in std_prob.index2var.items():
                 var.set_value(x[i])
 
+        # Info
+        info = {'status': solver.get_status(),
+                'iterations': solver.get_iterations(),
+                'time_problem': time_problem,
+                'time_solver': time_solver}
+
         # Return
-        return solver.get_status()
+        return info
