@@ -383,7 +383,7 @@ class Problem(object):
         # Problem
         t0 = time.time()
         std_prob = self.__get_std_problem__(fast_evaluator=fast_evaluator)
-        time_problem = time.time()-t0
+        time_transformation = time.time()-t0
 
         # Solver
         if solver == 'augl':
@@ -433,7 +433,7 @@ class Problem(object):
         # Info
         info = {'status': solver.get_status(),
                 'iterations': solver.get_iterations(),
-                'time_problem': time_problem,
+                'time_transformation': time_transformation,
                 'time_solver': time_solver}
 
         # Return

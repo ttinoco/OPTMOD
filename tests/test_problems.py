@@ -278,7 +278,7 @@ class TestProblems(unittest.TestCase):
         info = p.solve(solver='inlp', parameters={'quiet': True})
 
         self.assertTrue('iterations' in info)
-        self.assertTrue('time_problem' in info)
+        self.assertTrue('time_transformation' in info)
         self.assertTrue('time_solver' in info)
 
         self.assertEqual(info['status'], 'solved')
