@@ -84,7 +84,12 @@ class Problem(object):
             raise TypeError('invalid objective type')
 
         self.objective = objective
-        self.constraints = sum([ConstraintArray(c).flatten().tolist() for c in constraints], [])
+        self.constraints = []
+        for c in constraints:
+            if isinstance(c, Constraint):
+                self.constraints.append(c)
+            else:
+                self.constraints.extend(ConstraintArray(c).flatten().tolist())
         
     def __repr__(self):
 
