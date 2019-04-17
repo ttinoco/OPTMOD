@@ -79,13 +79,15 @@ class TestProblems(unittest.TestCase):
         
         comp = p.__get_std_components__()
 
-        self.assertEqual(len(comp), 12)
+        self.assertEqual(len(comp), 14)
 
         phi = comp['phi']
         gphi_list = comp['gphi_list']
         Hphi_list = comp['Hphi_list']
         phi_prop = comp['phi_prop']
 
+        cA_list = comp['cA_list']
+        cJ_list = comp['cJ_list']
         A_list = comp['A_list']
         b_list = comp['b_list']
         f_list = comp['f_list']
@@ -94,6 +96,9 @@ class TestProblems(unittest.TestCase):
         u_list = comp['u_list']
         l_list = comp['l_list']
         prop_list = comp['prop_list']
+
+        self.assertEqual(len(cA_list), len(b_list))
+        self.assertEqual(len(cJ_list), len(f_list))
 
         self.assertEqual(str(phi), 'x*x + x*2.00e+00*y + y*y')
         self.assertTrue(str(gphi_list) == '[(x, y*2.00e+00 + x + x), (y, y + y + x*2.00e+00)]' or
@@ -109,8 +114,8 @@ class TestProblems(unittest.TestCase):
         self.assertEqual(str(J_list), '[(0, x, y), (0, y, x), (1, x, cos(x)), (1, s, -1.00e+00), (2, y, -sin(y)), (2, s, -1.00e+00)]')
         self.assertEqual(str(H_list), '[[(x, y, 1.00e+00)], [(x, x, -sin(x))], [(y, y, -1.00e+00*cos(y))]]')
 
-        self.assertEqual(str(u_list), '[(x, 10.0), (s, 0), (s, 0)]')
-        self.assertEqual(str(l_list), '[(y, 19.0), (s, 0)]')
+        self.assertEqual(str([(x[0], x[1]) for x in u_list]), '[(x, 10.0), (s, 0), (s, 0)]')
+        self.assertEqual(str([(x[0], x[1]) for x in l_list]), '[(y, 19.0), (s, 0)]')
 
     def test_std_problem(self):
 
@@ -334,6 +339,117 @@ class TestProblems(unittest.TestCase):
         self.assertEqual(info['status'], 'solved')
         self.assertAlmostEqual(x.get_value(), 100, places=4)
         self.assertAlmostEqual(y.get_value(), 170, places=4)
+
+    def test_solve_LP_clp_cmd_duals_ub(self):
+
+        x = optmod.VariableScalar('x')
+        y = optmod.VariableScalar('y')
+
+        c1 = 100 <= x
+        c2 = x <= 200
+        c3 = 80 <= y
+        c4 = y <= 170
+        c5 = y >= -x + 200
+
+        # Problem
+        p = optmod.Problem(objective=minimize(2*x-5*y),
+                           constraints=[c1, c2, c3, c4, c5])
+
+        try:
+            info = p.solve(solver='clp_cmd', parameters={'quiet': True})
+        except ImportError:
+            raise unittest.SkipTest('clp cmd not available')
+
+        self.assertEqual(info['status'], 'solved')
+        self.assertAlmostEqual(x.get_value(), 100, places=4)
+        self.assertAlmostEqual(y.get_value(), 170, places=4)
+
+        self.assertEqual(c2.get_dual(), 0.)
+        self.assertEqual(c3.get_dual(), 0.)
+        self.assertEqual(c5.get_dual(), 0.)
+
+        self.assertEqual(2.-c1.get_dual(), 0.)
+        self.assertEqual(-5.+c4.get_dual(), 0.)
+
+    def test_solve_LP_clp_cmd_duals_A(self):
+
+        x = optmod.VariableScalar('x')
+
+        c = 3*x == 4
+
+        p = optmod.Problem(objective=minimize(5*x),
+                           constraints=[c])
+
+        try:
+            info = p.solve(solver='clp_cmd', parameters={'quiet': True})
+        except ImportError:
+            raise unittest.SkipTest('clp cmd not available')
+
+        self.assertEqual(info['status'], 'solved')
+        self.assertAlmostEqual(x.get_value(), 4./3., places=4)
+
+        self.assertLess(np.abs(5.-3*c.get_dual()), 1e-7)
+        
+    def test_solve_LP_clp_cmd_duals_A_ineq(self):
+
+        x = optmod.VariableScalar('x')
+
+        c = 3*x >= 4 # -3x <= -4
+
+        p = optmod.Problem(objective=minimize(5*x),
+                           constraints=[c])
+
+        try:
+            info = p.solve(solver='clp_cmd', parameters={'quiet': True})
+        except ImportError:
+            raise unittest.SkipTest('clp cmd not available')
+
+        self.assertEqual(info['status'], 'solved')
+        self.assertAlmostEqual(x.get_value(), 4./3., places=4)
+
+        self.assertLess(np.abs(5.-3*c.get_dual()), 1e-7)
+
+        c = 3*x <= 4 
+
+        p = optmod.Problem(objective=minimize(-5*x),
+                           constraints=[c])
+
+        try:
+            info = p.solve(solver='clp_cmd', parameters={'quiet': True})
+        except ImportError:
+            raise unittest.SkipTest('clp cmd not available')
+
+        self.assertEqual(info['status'], 'solved')
+        self.assertAlmostEqual(x.get_value(), 4./3., places=4)
+
+        self.assertLess(np.abs(-5.+3*c.get_dual()), 1e-7)
+
+    def test_solve_ipopt_duals_J(self):
+
+        x = optmod.VariableScalar('x')
+
+        c1 = optmod.cos(x) == 0.75
+        c2 = x >= -np.pi
+        c3 = x <= np.pi
+
+        p = optmod.Problem(objective=minimize(5*x),
+                           constraints=[c1, c2, c3])
+
+        try:
+            info = p.solve(solver='ipopt', parameters={'quiet': True})
+        except ImportError:
+            raise unittest.SkipTest('ipopt not available')
+
+        self.assertEqual(info['status'], 'solved')
+        self.assertAlmostEqual(x.get_value(), -np.abs(np.arccos(0.75)), places=5)
+        self.assertAlmostEqual(np.cos(x.get_value()), 0.75, places=5)
+        self.assertGreater(x.get_value(), -np.pi)
+        self.assertLess(x.get_value(), np.pi)
+
+        self.assertEqual(c2.get_dual(), 0.)
+        self.assertEqual(c3.get_dual(), 0.)
+
+        self.assertLess(np.abs(5. - (-np.sin(x.get_value()))*c1.get_dual()), 1e-7)
 
     def test_solve_QP(self):
 

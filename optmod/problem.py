@@ -109,10 +109,10 @@ class Problem(object):
         
         obj_comp = self.objective.__get_std_components__()
 
-        row_counters = {'A_row': 0, 'J_row': 0}
+        counters = {'A_row': 0, 'J_row': 0}
         constr_comp = dict([(key, list()) for key in Constraint.__get_std_keys__()])
         for c in self.constraints:
-            comp = c.__get_std_components__(row_counters)
+            comp = c.__get_std_components__(counters=counters)
             for key in comp:
                 constr_comp[key] += comp[key]
                                 
@@ -160,6 +160,7 @@ class Problem(object):
         Hphi_data = ExpressionMatrix(data)
         
         # Linear constraints
+        Aindex2constr = dict(enumerate(comp['cA_list']))
         A_list = comp['A_list']
         b_list = comp['b_list']
         row, col, data = zip(*A_list) if A_list else ([], [], [])
@@ -170,6 +171,7 @@ class Problem(object):
         b = np.array(b_list, dtype=float)
 
         # Nonlinear constraints
+        Jindex2constr = dict(enumerate(comp['cJ_list']))
         f_list = comp['f_list']
         J_list = comp['J_list']
         H_list = comp['H_list']        
@@ -209,16 +211,23 @@ class Problem(object):
         H_comb_nnz = np.array(H_comb_nnz)
 
         # Bounds
+        uindex2constr = {}
+        lindex2constr = {}
         u_list = comp['u_list']
         l_list = comp['l_list']
         u = Problem.INF*np.ones(num_vars)
         l = -Problem.INF*np.ones(num_vars)
-        for x, val in u_list:
+        for x, val, c in u_list:
             index = var2index[x]
-            u[index] = np.minimum(u[index], val)
-        for x, val in l_list:
+            if val <= u[index]:
+                u[index] = val
+                uindex2constr[index] = c
+
+        for x, val, c in l_list:
             index = var2index[x]
-            l[index] = np.maximum(l[index], val)
+            if val >= l[index]:
+                l[index] = val
+                lindex2constr[index] = c
                     
         # Problem
         p = OptProblem()
@@ -251,16 +260,20 @@ class Problem(object):
         p.x = var_values
 
         # Aux data
-        p.var2index = var2index       # dict: var -> index
-        p.index2var = index2var       # dict: index -> var
-        p.phi_data = phi_data         # expression matrix
-        p.gphi_indices = gphi_indices # array of indices
-        p.gphi_data = gphi_data       # expression matrix
-        p.Hphi_data = Hphi_data       # expression matrix
-        p.f_data = f_data             # expression matrix
-        p.J_data = J_data             # expression matrix
-        p.H_comb_data = H_comb_data   # expression matrix
-        p.H_comb_nnz = H_comb_nnz     # array
+        p.var2index = var2index         # dict: var -> index
+        p.index2var = index2var         # dict: index -> var
+        p.Aindex2constr = Aindex2constr # dict: index -> constraint
+        p.Jindex2constr = Jindex2constr # dict: index -> constraint
+        p.uindex2constr = uindex2constr # dict: index -> constraint
+        p.lindex2constr = lindex2constr # dict: index -> constraint
+        p.phi_data = phi_data           # expression matrix
+        p.gphi_indices = gphi_indices   # array of indices
+        p.gphi_data = gphi_data         # expression matrix
+        p.Hphi_data = Hphi_data         # expression matrix
+        p.f_data = f_data               # expression matrix
+        p.J_data = J_data               # expression matrix
+        p.H_comb_data = H_comb_data     # expression matrix
+        p.H_comb_nnz = H_comb_nnz       # array
 
         # Properties (curvature)
         p.properties = []
@@ -424,11 +437,26 @@ class Problem(object):
             pass
         time_solver = time.time()-t0
 
-        # Get values
+        # Get primal values
         x = solver.get_primal_variables()
         if x is not None:
             for i, var in std_prob.index2var.items():
                 var.set_value(x[i])
+
+        # Get dual variables
+        lam, nu, mu, pi = solver.get_dual_variables()        
+        if lam is not None:
+            for i, c in std_prob.Aindex2constr.items():
+                c.set_dual(lam[i])
+        if nu is not None:
+            for i, c in std_prob.Jindex2constr.items():
+                c.set_dual(nu[i])
+        if mu is not None:
+            for i, c in std_prob.uindex2constr.items():
+                c.set_dual(mu[i])
+        if pi is not None:
+            for i, c in std_prob.lindex2constr.items():
+                c.set_dual(pi[i])
 
         # Info
         info = {'status': solver.get_status(),

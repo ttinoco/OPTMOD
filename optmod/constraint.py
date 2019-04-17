@@ -14,6 +14,7 @@ class Constraint(object):
         self.op = op
         self.rhs = make_Expression(rhs)
         self.slack = None
+        self.dual = 0.
 
         assert(op in ['==', '>=', '<='])
 
@@ -24,7 +25,9 @@ class Constraint(object):
     @classmethod
     def __get_std_keys__(cls):
 
-        return ['A_list',
+        return ['cA_list',
+                'cJ_list',
+                'A_list',
                 'b_list',
                 'f_list',
                 'J_list',
@@ -35,13 +38,16 @@ class Constraint(object):
 
     def __get_std_components__(self, counters=None):
 
-        A_list = []
-        b_list = []
-        f_list = []
-        J_list = []
-        H_list = []
-        u_list = []
-        l_list = []
+        cA_list = [] # list of constraints
+        cJ_list = [] # list of constraints
+        
+        A_list = [] # list of (row index, variable, data value)
+        b_list = [] # list of values
+        f_list = [] # list of expressions
+        J_list = [] # list of (row index, variable, expression)
+        H_list = [] # list of list of (variable, variable, expression)
+        u_list = [] # list of (variable, data value, constraint)
+        l_list = [] # list of (variable, data value, constraint)
         prop_list = []
 
         if counters is None:
@@ -63,12 +69,12 @@ class Constraint(object):
         prop_list.append(phi_prop)
         
         # Bound
-        if affine and len(a) == 1 and list(a.values())[0] ==1. and op != '==':
+        if affine and len(a) == 1 and list(a.values())[0] == 1. and op != '==':
             
             if op == '<=': # x + b <= 0
-                u_list.append((list(a.keys())[0], -b))
+                u_list.append((list(a.keys())[0], -b, self))
             else:          # x + b >= 0
-                l_list.append((list(a.keys())[0], -b))
+                l_list.append((list(a.keys())[0], -b, self))
             
         # Linear
         elif affine:
@@ -78,6 +84,7 @@ class Constraint(object):
                 for x, val in a.items():
                     A_list.append((counters['A_row'], x, val))
                 b_list.append(-b)
+                cA_list.append(self)
                 counters['A_row'] += 1
 
             else : # a^Tx + b - s == 0 and s <= 0 or s >= 0:
@@ -87,10 +94,11 @@ class Constraint(object):
                     A_list.append((counters['A_row'], x, val))
                 A_list.append((counters['A_row'], s, -1.))
                 b_list.append(-b)
+                cA_list.append(self)
                 if op == '<=':
-                    u_list.append((s, 0))
+                    u_list.append((s, 0, self))
                 else:
-                    l_list.append((s, 0))
+                    l_list.append((s, 0, self))
                 counters['A_row'] += 1
                 a[s] = 1.
                 self.slack = s
@@ -103,6 +111,7 @@ class Constraint(object):
             if op == '==': # f(x) == 0
 
                 f_list.append(phi)
+                cJ_list.append(self)
                 for x, val in gphi_list:
                     J_list.append((counters['J_row'], x, val))
                 counters['J_row'] += 1
@@ -111,19 +120,22 @@ class Constraint(object):
 
                 s = VariableScalar(name='s')
                 f_list.append(phi-s)
+                cJ_list.append(self)
                 for x, val in gphi_list:
                     J_list.append((counters['J_row'], x, val))
                 J_list.append((counters['J_row'], s, make_Expression(-1.)))
                 if op == '<=':
-                    u_list.append((s, 0))
+                    u_list.append((s, 0, self))
                 else:
-                    l_list.append((s, 0))
+                    l_list.append((s, 0, self))
                 counters['J_row'] += 1
                 a[s] = 1.
                 self.slack = s
         
         # Return
-        return {'A_list': A_list,
+        return {'cA_list': cA_list,
+                'cJ_list': cJ_list,
+                'A_list': A_list,
                 'b_list': b_list,
                 'f_list': f_list,
                 'J_list': J_list,
@@ -151,6 +163,10 @@ class Constraint(object):
 
         return self.lhs.get_variables().union(self.rhs.get_variables())
 
+    def get_dual(self):
+
+        return self.dual
+
     def is_equality(self):
 
         return self.op == '=='
@@ -162,6 +178,10 @@ class Constraint(object):
     def tolist(self):
 
         return [self]
+
+    def set_dual(self, dual):
+
+        self.dual = dual
         
 class ConstraintArray(object):
 
