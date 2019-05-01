@@ -33,24 +33,24 @@ for bus in net.buses:
     dP = 0.
     dQ = 0.
     for gen in bus.generators:
-        dP = dP + P[gen.index]
-        dQ = dQ + Q[gen.index]
+        dP += P[gen.index]
+        dQ += Q[gen.index]
     for load in bus.loads:
-        dP = dP - load.P
-        dQ = dQ - load.Q
+        dP -= load.P
+        dQ -= load.Q
     for shunt in bus.shunts:
-        dP = dP - shunt.g*v[bus.index]*v[bus.index]
-        dQ = dQ + shunt.b*v[bus.index]*v[bus.index]
+        dP -= shunt.g*v[bus.index]*v[bus.index]
+        dQ += shunt.b*v[bus.index]*v[bus.index]
     for br in bus.branches_k:
         vk, vm = v[br.bus_k.index], v[br.bus_m.index]
-        wk, wm = w[br.bus_k.index], w[br.bus_m.index]
-        dP = dP - (br.ratio**2.)*vk*vk*(br.g_k+br.g) + br.ratio*vk*vm*(br.g*cos(wk-wm-br.phase) + br.b*sin(wk-wm-br.phase))
-        dQ = dQ + (br.ratio**2.)*vk*vk*(br.b_k+br.b) + br.ratio*vk*vm*(br.g*sin(wk-wm-br.phase) - br.b*cos(wk-wm-br.phase))
+        dw = w[br.bus_k.index]-w[br.bus_m.index]-br.phase
+        dP -= (br.ratio**2.)*vk*vk*(br.g_k+br.g) - br.ratio*vk*vm*(br.g*cos(dw) + br.b*sin(dw))
+        dQ -= -(br.ratio**2.)*vk*vk*(br.b_k+br.b) - br.ratio*vk*vm*(br.g*sin(dw) - br.b*cos(dw))
     for br in bus.branches_m:
         vk, vm = v[br.bus_k.index], v[br.bus_m.index]
-        wk, wm = w[br.bus_k.index], w[br.bus_m.index]
-        dP = dP - vm*vm*(br.g_m+br.g) + br.ratio*vm*vk*(br.g*cos(wm-wk+br.phase) + br.b*sin(wm-wk+br.phase))
-        dQ = dQ + vm*vm*(br.b_m+br.b) + br.ratio*vm*vk*(br.g*sin(wm-wk+br.phase) - br.b*cos(wm-wk+br.phase))
+        dw = w[br.bus_m.index]-w[br.bus_k.index]+br.phase
+        dP -= vm*vm*(br.g_m+br.g) - br.ratio*vm*vk*(br.g*cos(dw) + br.b*sin(dw))
+        dQ -= -vm*vm*(br.b_m+br.b) - br.ratio*vm*vk*(br.g*sin(dw) - br.b*cos(dw))
     constraints.extend([dP == 0., dQ == 0.])
     assert(abs(dP.get_value()-bus.P_mismatch) < 1e-8)
     assert(abs(dQ.get_value()-bus.Q_mismatch) < 1e-8)
