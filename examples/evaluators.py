@@ -7,7 +7,7 @@ y = VariableScalar(name='y', value=10.)
 
 f = sin(3*x+10.)*cos(y-sum(x*y))
 
-vars = list(x.get_variables())+[y]
+vars = list(f.get_variables())
 
 e = f.get_fast_evaluator(vars)
 var_values = np.array([v.get_value() for v in vars])

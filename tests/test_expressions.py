@@ -56,7 +56,7 @@ class TestExpressions(unittest.TestCase):
 
         self.assertTupleEqual(f.shape, (4,3))
 
-        variables = list(x.get_variables())+[y]
+        variables = list(f.get_variables())
         self.assertEqual(len(variables), 13)
 
         e = f.get_fast_evaluator(variables)
