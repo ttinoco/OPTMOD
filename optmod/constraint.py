@@ -6,7 +6,7 @@ class Constraint(object):
     
     lhs = None
     op = None
-    rsh = None
+    rhs = None
 
     def __init__(self, lhs, op, rhs):
 
