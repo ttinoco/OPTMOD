@@ -189,33 +189,31 @@ class Expression(object):
 
         G = nx.MultiDiGraph()
         prop = self.__analyze__(G, '')
-        vars = list(prop['a'].keys())
-        
-        n = len(vars)
-        
-        for i in range(0, n):
 
-            var1 = vars[i]
+        # Affine
+        if prop['affine']:
+            for var, value in prop['a'].items():
+                gphi_list.append((var, make_Expression(value)))
 
-            d = self.get_derivative(var1, G=G)
+        # Not affine
+        else:
+            vars = list(prop['a'].keys())
+            n = len(vars)
+            for i in range(0, n):
+                var1 = vars[i]
+                d = self.get_derivative(var1, G=G)
+                gphi_list.append((var1, d))
+                dG = nx.MultiDiGraph()
+                dprop = d.__analyze__(dG, '')
+                dvars = set(dprop['a'].keys())
+                for j in range(i, n):
+                    var2 = vars[j]
+                    if var2 not in dvars:
+                        continue
+                    dd = d.get_derivative(var2, G=dG)
+                    Hphi_list.append((var1, var2, dd))
 
-            gphi_list.append((var1, d))
-            
-            dG = nx.MultiDiGraph()
-            dprop = d.__analyze__(dG, '')
-            dvars = set(dprop['a'].keys())
-            
-            for j in range(i, n):
-
-                var2 = vars[j]
-
-                if var2 not in dvars:
-                    continue
-
-                dd = d.get_derivative(var2, G=dG)
-
-                Hphi_list.append((var1, var2, dd))
-                
+        # Return
         return {'phi': phi,
                 'gphi_list': gphi_list,
                 'Hphi_list': Hphi_list,
