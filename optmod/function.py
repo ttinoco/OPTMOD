@@ -79,6 +79,23 @@ class Function(Expression):
                       map(lambda arg: arg.get_variables(), self.arguments),
                       set())
 
+    def get_value(self):
+
+        process = [self]
+        processed = []
+        while process:
+            new_nodes = []
+            for n in process:
+                processed.insert(0, n)
+                if isinstance(n, Function):
+                    for nn in n.arguments:
+                        new_nodes.append(nn)
+            process = new_nodes
+        for n in processed:
+            n.__set_value__()
+        print("LEN", len(processed))
+        return self.__value__
+
     def is_function(self):
 
         return True
@@ -149,9 +166,9 @@ class add(Function):
             
         return coptmod.NODE_TYPE_ADD
 
-    def get_value(self):
-        
-        return np.sum(list(map(lambda a: a.get_value(), self.arguments)))
+    def __set_value__(self):
+
+        self.__value__ = np.sum(list(map(lambda a: a.__value__, self.arguments)))
 
 class subtract(Function):
 
@@ -208,9 +225,9 @@ class subtract(Function):
             
         return coptmod.NODE_TYPE_SUBTRACT
         
-    def get_value(self):
+    def __set_value__(self):
         
-        return self.arguments[0].get_value()-self.arguments[1].get_value()
+        self.__value__ = self.arguments[0].__value__-self.arguments[1].__value__
     
 class multiply(Function):
 
@@ -269,9 +286,9 @@ class multiply(Function):
     
         return coptmod.NODE_TYPE_MULTIPLY
 
-    def get_value(self):
+    def __set_value__(self):
 
-        return np.prod([a.get_value() for a in self.arguments])
+        self.__value__ = np.prod([a.__value__ for a in self.arguments])
 
 class negate(ElementWiseFunction):
 
@@ -281,7 +298,7 @@ class negate(ElementWiseFunction):
             return args.arguments[0]
 
         elif isinstance(args, Constant):
-            return make_Expression(-args.get_value())
+            return make_Expression(-args.__value__)
 
         else:
             return super(negate, cls).__new__(cls, args)
@@ -328,16 +345,16 @@ class negate(ElementWiseFunction):
             
         return coptmod.NODE_TYPE_NEGATE
         
-    def get_value(self):
+    def __set_value__(self):
 
-        return -self.arguments[0].get_value()
+        self.__value__ =  -self.arguments[0].__value__
 
 class sin(ElementWiseFunction):
 
     def __new__(cls, args):
 
         if isinstance(args, Constant):
-            return make_Expression(np.sin(args.get_value()))
+            return make_Expression(np.sin(args.__value__))
 
         else:
             return super(sin, cls).__new__(cls, args)
@@ -360,16 +377,16 @@ class sin(ElementWiseFunction):
             
         return coptmod.NODE_TYPE_SIN
         
-    def get_value(self):
+    def __set_value__(self):
 
-        return np.sin(self.arguments[0].get_value())
+        self.__value__ = np.sin(self.arguments[0].__value__)
 
 class cos(ElementWiseFunction):
 
     def __new__(cls, args):
 
         if isinstance(args, Constant):
-            return make_Expression(np.cos(args.get_value()))
+            return make_Expression(np.cos(args.__value__))
 
         else:
             return super(cos, cls).__new__(cls, args)
@@ -392,6 +409,6 @@ class cos(ElementWiseFunction):
             
         return coptmod.NODE_TYPE_COS
 
-    def get_value(self):
+    def __set_value__(self):
 
-        return np.cos(self.arguments[0].get_value())
+        self.__value__ = np.cos(self.arguments[0].__value__)

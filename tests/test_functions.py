@@ -14,7 +14,7 @@ class TestFunctions(unittest.TestCase):
         self.assertEqual(len(f.arguments), 2)
         self.assertTrue(f.arguments[0] is x)
         self.assertTrue(isinstance(f.arguments[1], optmod.constant.Constant))
-        self.assertEqual(f.arguments[1].value, 1.)
+        self.assertEqual(f.arguments[1].get_value(), 1.)
 
     def test_get_derivative(self):
 

@@ -7,6 +7,7 @@ class Expression(object):
 
     name = ''
     __array_priority__ = 1000.
+    __value__ = 0.
 
     def __init__(self):
 
@@ -50,7 +51,7 @@ class Expression(object):
             elif x.is_zero():
                 return self
             elif self.is_constant() and x.is_constant():
-                return make_Expression(self.value + x.value)
+                return make_Expression(self.__value__ + x.__value__)
             else:
                 return add([self, x])
 
@@ -82,7 +83,7 @@ class Expression(object):
             elif x.is_zero():
                 return self
             elif self.is_constant() and x.is_constant():
-                return make_Expression(self.value - x.value)
+                return make_Expression(self.__value__ - x.__value__)
             else:
                 return subtract([self, x])
 
@@ -110,7 +111,7 @@ class Expression(object):
             elif x.is_zero():
                 return -self
             elif self.is_constant() and x.is_constant():
-                return make_Expression(x.value - self.value)
+                return make_Expression(x.__value__ - self.__value__)
             else:
                 return subtract([x, self])
 
@@ -138,7 +139,7 @@ class Expression(object):
             elif x.is_one():
                 return self
             elif self.is_constant() and x.is_constant():
-                return make_Expression(self.value*x.value)
+                return make_Expression(self.__value__*x.__value__)
             else:
                 return multiply([self, x])
 
@@ -227,13 +228,17 @@ class Expression(object):
 
         raise NotImplementedError
 
+    def __set_value__(self):
+
+        pass
+
     def get_derivative(self, var, G=None):
 
         return make_Expression(0.)
 
     def get_value(self):
 
-        return 0.
+        return self.__value__
 
     def get_variables(self):
     

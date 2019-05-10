@@ -14,7 +14,7 @@ class TestAdd(unittest.TestCase):
         self.assertEqual(len(f.arguments), 2)
         self.assertTrue(f.arguments[0] is x)
         self.assertTrue(isinstance(f.arguments[1], optmod.constant.Constant))
-        self.assertEqual(f.arguments[1].value, 1.)
+        self.assertEqual(f.arguments[1].get_value(), 1.)
 
         self.assertRaises(AssertionError, optmod.function.add, [x, 1., 2.])
 
@@ -36,7 +36,7 @@ class TestAdd(unittest.TestCase):
         self.assertTrue(isinstance(f, optmod.function.add))
         self.assertTrue(f.arguments[0] is x)
         self.assertTrue(isinstance(f.arguments[1], optmod.constant.Constant))
-        self.assertEqual(f.arguments[1].value, 1.)
+        self.assertEqual(f.arguments[1].get_value(), 1.)
         self.assertEqual(f.get_value(), 3.)
         self.assertEqual(str(f), 'x + %s' %optmod.utils.repr_number(1.))
         
@@ -44,7 +44,7 @@ class TestAdd(unittest.TestCase):
         self.assertTrue(isinstance(f, optmod.function.add))
         self.assertTrue(f.arguments[0] is x)
         self.assertTrue(isinstance(f.arguments[1], optmod.constant.Constant))
-        self.assertEqual(f.arguments[1].value, 1.)
+        self.assertEqual(f.arguments[1].get_value(), 1.)
         self.assertEqual(f.get_value(), 3.)
         self.assertEqual(str(f), 'x + %s' %optmod.utils.repr_number(1.))
 
@@ -60,7 +60,7 @@ class TestAdd(unittest.TestCase):
         self.assertTrue(isinstance(f.arguments[0], optmod.function.add))
         self.assertTrue(f.arguments[0].arguments[0] is x)
         self.assertTrue(isinstance(f.arguments[0].arguments[1], optmod.constant.Constant))
-        self.assertEqual(f.arguments[0].arguments[1].value, 3)
+        self.assertEqual(f.arguments[0].arguments[1].get_value(), 3)
         self.assertTrue(f.arguments[1] is y)
         self.assertEqual(f.get_value(), 8.)
         self.assertEqual(str(f), 'x + %s + y' %optmod.utils.repr_number(3.))
@@ -81,7 +81,7 @@ class TestAdd(unittest.TestCase):
                 fij = f[i,j]
                 self.assertTrue(isinstance(fij, optmod.function.add))
                 self.assertTrue(fij.arguments[0] is x)
-                self.assertEqual(fij.arguments[1].value, r[i,j])
+                self.assertEqual(fij.arguments[1].get_value(), r[i,j])
         self.assertTrue(isinstance(f.get_value(), np.matrix))
         self.assertTrue(np.all(f.get_value() == 2. + r))
         self.assertEqual(str(f),
@@ -95,7 +95,7 @@ class TestAdd(unittest.TestCase):
                 fij = f[i,j]
                 self.assertTrue(isinstance(fij, optmod.function.add))
                 self.assertTrue(fij.arguments[0] is x)
-                self.assertEqual(fij.arguments[1].value, r[i,j])
+                self.assertEqual(fij.arguments[1].get_value(), r[i,j])
         self.assertTrue(isinstance(f.get_value(), np.matrix))
         self.assertTrue(np.all(f.get_value() == 2. + r))
         self.assertEqual(str(f),
@@ -123,7 +123,7 @@ class TestAdd(unittest.TestCase):
                 fij = f[i,j]
                 self.assertTrue(isinstance(fij, optmod.function.add))
                 self.assertTrue(fij.arguments[0] is y[i,j])
-                self.assertEqual(fij.arguments[1].value, 1.)
+                self.assertEqual(fij.arguments[1].get_value(), 1.)
         self.assertTrue(isinstance(f.get_value(), np.matrix))
         self.assertTrue(np.all(f.get_value() == np.array(value) + 1))
         self.assertEqual(str(f),
@@ -239,25 +239,25 @@ class TestAdd(unittest.TestCase):
         fy = f.get_derivative(y)
         
         self.assertTrue(isinstance(fx, optmod.constant.Constant))
-        self.assertEqual(fx.value, 1.)
+        self.assertEqual(fx.get_value(), 1.)
         self.assertTrue(isinstance(fy, optmod.constant.Constant))
-        self.assertEqual(fy.value, 0.)
+        self.assertEqual(fy.get_value(), 0.)
         
         f = x + y
         fx = f.get_derivative(x)
         fy = f.get_derivative(y)
         self.assertTrue(isinstance(fx, optmod.constant.Constant))
-        self.assertEqual(fx.value, 1.)
+        self.assertEqual(fx.get_value(), 1.)
         self.assertTrue(isinstance(fy, optmod.constant.Constant))
-        self.assertEqual(fy.value, 1.)
+        self.assertEqual(fy.get_value(), 1.)
 
         f = (x + 1) + (x + 3) + (y + (x + 5.))
         fx = f.get_derivative(x)
         fy = f.get_derivative(y)
         self.assertTrue(isinstance(fx, optmod.constant.Constant))
-        self.assertEqual(fx.value, 3.)
+        self.assertEqual(fx.get_value(), 3.)
         self.assertTrue(isinstance(fy, optmod.constant.Constant))
-        self.assertEqual(fy.value, 1.)
+        self.assertEqual(fy.get_value(), 1.)
 
         f = x + x
         fx = f.get_derivative(x)

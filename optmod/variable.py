@@ -27,7 +27,7 @@ class VariableScalar(Expression):
         Expression.__init__(self)
 
         self.name = name
-        self.value = np.float64(value) if value is not None else 0.
+        self.__value__ = np.float64(value) if value is not None else 0.
         self.type = type
 
     def __repr__(self):
@@ -46,7 +46,7 @@ class VariableScalar(Expression):
 
         evaluator.add_node(self.__evaluator_node_type__(),
                            id(self),
-                           self.value,
+                           self.__value__,
                            [])
 
     def __analyze__(self, G, prefix):
@@ -68,10 +68,6 @@ class VariableScalar(Expression):
 
         return set([self])
     
-    def get_value(self):
-        
-        return self.value
-
     def is_variable(self):
 
         return True
@@ -86,7 +82,7 @@ class VariableScalar(Expression):
 
     def set_value(self, val):
 
-        self.value = val
+        self.__value__ = val
         
 class VariableMatrix(ExpressionMatrix):
 

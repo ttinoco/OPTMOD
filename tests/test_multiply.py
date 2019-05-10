@@ -14,7 +14,7 @@ class TestMultiply(unittest.TestCase):
         self.assertEqual(len(f.arguments), 2)
         self.assertTrue(f.arguments[0] is x)
         self.assertTrue(f.arguments[1].is_constant())
-        self.assertEqual(f.arguments[1].value, 1.)
+        self.assertEqual(f.arguments[1].get_value(), 1.)
 
         self.assertRaises(AssertionError, optmod.function.multiply, [1., x, 2.])
         self.assertRaises(AssertionError, optmod.function.multiply, [x])

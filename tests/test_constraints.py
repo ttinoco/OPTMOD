@@ -45,14 +45,14 @@ class TestConstraints(unittest.TestCase):
         self.assertEqual(c.op, '==')
         self.assertIs(c.lhs, x)
         self.assertTrue(c.rhs.is_constant())
-        self.assertEqual(c.rhs.value, 1.)
+        self.assertEqual(c.rhs.get_value(), 1.)
 
         c = 2 == x
         self.assertTrue(isinstance(c, optmod.constraint.Constraint))
         self.assertEqual(c.op, '==')
         self.assertIs(c.lhs, x)
         self.assertTrue(c.rhs.is_constant())
-        self.assertEqual(c.rhs.value, 2.)
+        self.assertEqual(c.rhs.get_value(), 2.)
 
         c = x == y
         self.assertTrue(isinstance(c, optmod.constraint.Constraint))
@@ -69,7 +69,7 @@ class TestConstraints(unittest.TestCase):
                 self.assertEqual(cij.op, '==')
                 self.assertIs(cij.lhs, x)
                 self.assertTrue(cij.rhs.is_constant())
-                self.assertEqual(cij.rhs.value, r[i,j])
+                self.assertEqual(cij.rhs.get_value(), r[i,j])
 
         c = r == x
         self.assertTrue(isinstance(c, optmod.constraint.ConstraintArray))
@@ -80,7 +80,7 @@ class TestConstraints(unittest.TestCase):
                 self.assertEqual(cij.op, '==')
                 self.assertIs(cij.lhs, x)
                 self.assertTrue(cij.rhs.is_constant())
-                self.assertEqual(cij.rhs.value, r[i,j])
+                self.assertEqual(cij.rhs.get_value(), r[i,j])
         
         c = x == z
         self.assertTrue(isinstance(c, optmod.constraint.ConstraintArray))
@@ -112,7 +112,7 @@ class TestConstraints(unittest.TestCase):
                 self.assertEqual(cij.op, '==')
                 self.assertIs(cij.lhs, z[i,j])
                 self.assertTrue(cij.rhs.is_constant())
-                self.assertEqual(cij.rhs.value, 3.)
+                self.assertEqual(cij.rhs.get_value(), 3.)
 
         c = z == 4.
         self.assertTrue(isinstance(c, optmod.constraint.ConstraintArray))
@@ -123,7 +123,7 @@ class TestConstraints(unittest.TestCase):
                 self.assertEqual(cij.op, '==')
                 self.assertIs(cij.lhs, z[i,j])
                 self.assertTrue(cij.rhs.is_constant())
-                self.assertEqual(cij.rhs.value, 4.)
+                self.assertEqual(cij.rhs.get_value(), 4.)
 
         c = r == z
         self.assertTrue(isinstance(c, optmod.constraint.ConstraintArray))
@@ -134,7 +134,7 @@ class TestConstraints(unittest.TestCase):
                 self.assertEqual(cij.op, '==')
                 self.assertIs(cij.lhs, z[i,j])
                 self.assertTrue(cij.rhs.is_constant())
-                self.assertEqual(cij.rhs.value, r[i,j])
+                self.assertEqual(cij.rhs.get_value(), r[i,j])
 
         c = z == r
         self.assertTrue(isinstance(c, optmod.constraint.ConstraintArray))
@@ -145,7 +145,7 @@ class TestConstraints(unittest.TestCase):
                 self.assertEqual(cij.op, '==')
                 self.assertIs(cij.lhs, z[i,j])
                 self.assertTrue(cij.rhs.is_constant())
-                self.assertEqual(cij.rhs.value, r[i,j])
+                self.assertEqual(cij.rhs.get_value(), r[i,j])
 
         c = 2*z == (z+1)
         self.assertTrue(isinstance(c, optmod.constraint.ConstraintArray))
@@ -208,14 +208,14 @@ class TestConstraints(unittest.TestCase):
         self.assertEqual(c.op, '<=')
         self.assertIs(c.lhs, x)
         self.assertTrue(c.rhs.is_constant())
-        self.assertEqual(c.rhs.value, 1.)
+        self.assertEqual(c.rhs.get_value(), 1.)
 
         c = 2 <= x
         self.assertTrue(isinstance(c, optmod.constraint.Constraint))
         self.assertEqual(c.op, '>=')
         self.assertIs(c.lhs, x)
         self.assertTrue(c.rhs.is_constant())
-        self.assertEqual(c.rhs.value, 2.)
+        self.assertEqual(c.rhs.get_value(), 2.)
     
     def test_greater_equal_construction(self):
 
@@ -229,14 +229,14 @@ class TestConstraints(unittest.TestCase):
         self.assertEqual(c.op, '>=')
         self.assertIs(c.lhs, x)
         self.assertTrue(c.rhs.is_constant())
-        self.assertEqual(c.rhs.value, 1.)
+        self.assertEqual(c.rhs.get_value(), 1.)
 
         c = 2 >= x
         self.assertTrue(isinstance(c, optmod.constraint.Constraint))
         self.assertEqual(c.op, '<=')
         self.assertIs(c.lhs, x)
         self.assertTrue(c.rhs.is_constant())
-        self.assertEqual(c.rhs.value, 2.)
+        self.assertEqual(c.rhs.get_value(), 2.)
 
     def test_std_components(self):
 

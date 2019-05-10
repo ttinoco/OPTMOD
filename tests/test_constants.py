@@ -10,7 +10,7 @@ class TestConstants(unittest.TestCase):
         self.assertTrue(isinstance(c, optmod.expression.Expression))
         self.assertTrue(isinstance(c, optmod.constant.Constant))
         self.assertEqual(c.name, 'const')
-        self.assertEqual(c.value, 4.)
+        self.assertEqual(c.get_value(), 4.)
 
         self.assertRaises(TypeError, optmod.constant.Constant, [1,2,3])
         self.assertRaises(TypeError, optmod.constant.Constant, optmod.constant.Constant(3.))

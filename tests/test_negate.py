@@ -116,6 +116,6 @@ class TestNegate(unittest.TestCase):
         fy = f.get_derivative(y)
 
         self.assertTrue(isinstance(fx, optmod.constant.Constant))
-        self.assertEqual(fx.value, -1.)
+        self.assertEqual(fx.get_value(), -1.)
         self.assertTrue(isinstance(fy, optmod.constant.Constant))
-        self.assertEqual(fy.value, 0.)
+        self.assertEqual(fy.get_value(), 0.)

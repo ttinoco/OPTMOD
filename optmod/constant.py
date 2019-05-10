@@ -5,21 +5,19 @@ from .expression import Expression
 
 class Constant(Expression):
 
-    value = 0.
-
     def __init__(self, value):
         
         Expression.__init__(self)
 
         self.name = 'const'
         try:
-            self.value = float(value)
+            self.__value__ = float(value)
         except:
             raise TypeError('invalid value')
 
     def __repr__(self):
 
-        return utils.repr_number(self.value)
+        return utils.repr_number(self.__value__)
 
     def __analyze__(self, G, prefix):
         
@@ -27,7 +25,7 @@ class Constant(Expression):
 
         return {'affine': True,
                 'a': {}, 
-                'b': self.value}
+                'b': self.__value__}
 
     def __evaluator_node_type__(self):
 
@@ -37,24 +35,20 @@ class Constant(Expression):
 
         evaluator.add_node(self.__evaluator_node_type__(),
                            id(self),
-                           self.value,
+                           self.__value__,
                            [])
-
-    def get_value(self):
-
-        return self.value
 
     def is_zero(self):
 
-        return self.value == 0.
+        return self.__value__ == 0.
 
     def is_one(self):
 
-        return self.value == 1.
+        return self.__value__ == 1.
 
     def is_constant(self, val=None):
 
         if val is None:
             return True
         else:
-            return self.value == val
+            return self.__value__ == val

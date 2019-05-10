@@ -111,7 +111,7 @@ class TestSin(unittest.TestCase):
         self.assertTrue(isinstance(fx, optmod.function.Function))
         self.assertEqual(fx.get_value(), np.cos(2.))
         self.assertTrue(isinstance(fy, optmod.constant.Constant))
-        self.assertEqual(fy.value, 0.)
+        self.assertEqual(fy.get_value(), 0.)
 
         f = optmod.sin(x + optmod.sin(x*y))
         fx = f.get_derivative(x)

@@ -111,12 +111,12 @@ class TestCos(unittest.TestCase):
         self.assertTrue(isinstance(fx, optmod.function.Function))
         self.assertEqual(fx.get_value(), -np.sin(2.))
         self.assertTrue(isinstance(fy, optmod.constant.Constant))
-        self.assertEqual(fy.value, 0.)
+        self.assertEqual(fy.get_value(), 0.)
 
         f = optmod.cos(x + optmod.cos(x*y))
         fx = f.get_derivative(x)
         fy = f.get_derivative(y)
-
+        
         self.assertTrue(fx.is_function())
         self.assertAlmostEqual(fx.get_value(), -np.sin(2.+np.cos(2.*3.))*(1.-np.sin(2.*3.)*3.))
 

@@ -23,13 +23,13 @@ class TestVariableDicts(unittest.TestCase):
         
         xa = x['a']
         self.assertTrue(isinstance(xa, optmod.VariableScalar))
-        self.assertEqual(xa.value, 0.)
+        self.assertEqual(xa.get_value(), 0.)
         self.assertTrue(xa.is_continuous())
         self.assertEqual(xa.name, 'foo_a')
 
         xb = x['b']
         self.assertTrue(isinstance(xb, optmod.VariableScalar))
-        self.assertEqual(xb.value, 0.)
+        self.assertEqual(xb.get_value(), 0.)
         self.assertTrue(xb.is_continuous())
         self.assertEqual(xb.name, 'foo_b')
 
@@ -41,13 +41,13 @@ class TestVariableDicts(unittest.TestCase):
         
         xa = x['a']
         self.assertTrue(isinstance(xa, optmod.VariableScalar))
-        self.assertEqual(xa.value, 10.)
+        self.assertEqual(xa.get_value(), 10.)
         self.assertTrue(xa.is_continuous())
         self.assertEqual(xa.name, 'bar_a')
 
         xb = x['b']
         self.assertTrue(isinstance(xb, optmod.VariableScalar))
-        self.assertEqual(xb.value, 0.)
+        self.assertEqual(xb.get_value(), 0.)
         self.assertTrue(xb.is_continuous())
         self.assertEqual(xb.name, 'bar_b')
         
