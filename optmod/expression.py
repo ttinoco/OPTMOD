@@ -60,41 +60,8 @@ class Expression(object):
             else:
                 args.append(a)
 
-        # New args
-        c = 0.
-        new_args = OrderedDict()
-        for arg in args:
-            if arg.is_constant():
-                c += arg.__value__
-            else:
-                if arg in new_args:
-                    new_args[arg] += 1.
-                elif isinstance(arg, multiply):
-                    if arg.arguments[0].is_constant():
-                        if arg.arguments[1] in new_args:
-                            new_args[arg.arguments[1]] += arg.arguments[0].__value__
-                        else:
-                            new_args[arg.arguments[1]] = arg.arguments[0].__value__
-                    elif arg.arguments[1].is_constant():
-                        if arg.arguments[0] in new_args:
-                            new_args[arg.arguments[0]] += arg.arguments[1].__value__
-                        else:
-                            new_args[arg.arguments[0]] = arg.arguments[1].__value__
-                    else:
-                        new_args[arg] = 1.
-                else:
-                    new_args[arg] = 1.
-        new_args = [key*value for key, value in new_args.items() if value != 0.]
-        if c != 0.:
-            new_args.append(make_Expression(c))
-
         # Return
-        nargs = len(new_args)
-        if  nargs == 0:
-            return make_Expression(0.)
-        if nargs == 1:
-            return new_args[0]
-        return add(new_args)
+        return add(args)
 
     def __radd__(self, x):
 
