@@ -73,7 +73,7 @@ class TestNegate(unittest.TestCase):
 
         f = -(1 - x)
         self.assertEqual(f.get_value(), -(1.-3.))
-        self.assertEqual(str(f), 'x + %s' %rn(-1.))
+        self.assertEqual(str(f), '%s + x' %rn(-1.))
 
         f = -(-x)
         self.assertEqual(f.get_value(), 3.)

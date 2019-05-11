@@ -7,7 +7,7 @@ class TestCoptmod(unittest.TestCase):
     def test_module(self):
         
         c = optmod.coptmod
-
+        
         self.assertTrue(hasattr(c, 'Evaluator'))
 
         self.assertListEqual([c.NODE_TYPE_UNKNOWN,
@@ -40,7 +40,7 @@ class TestCoptmod(unittest.TestCase):
         f.__fill_evaluator__(E)
         
         self.assertEqual(E.max_nodes, 20)
-        self.assertEqual(E.num_nodes, 9)
+        self.assertEqual(E.num_nodes, 8)
         self.assertEqual(E.num_inputs, 2)
         self.assertEqual(E.num_outputs, 20)
 
@@ -58,7 +58,7 @@ class TestCoptmod(unittest.TestCase):
         f.__fill_evaluator__(E)
         
         self.assertEqual(E.max_nodes, 20)
-        self.assertEqual(E.num_nodes, 8)
+        self.assertEqual(E.num_nodes, 9)
         self.assertEqual(E.num_inputs, 2)
         self.assertEqual(E.num_outputs, 20)        
 
@@ -81,7 +81,7 @@ class TestCoptmod(unittest.TestCase):
         f.__fill_evaluator__(E)
         
         self.assertEqual(E.max_nodes, 10)
-        self.assertEqual(E.num_nodes, 9)
+        self.assertEqual(E.num_nodes, 8)
         self.assertEqual(E.num_inputs, 2)
         self.assertEqual(E.num_outputs, 5)
 

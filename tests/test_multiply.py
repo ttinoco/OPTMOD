@@ -68,7 +68,7 @@ class TestMultiply(unittest.TestCase):
         self.assertTrue(f.arguments[0].is_function())
         self.assertTrue(f.arguments[1] is x)
         self.assertEqual(f.get_value(), -4)
-        self.assertEqual(str(f), '(y*%s + %s)*x' %(rn(-1.), rn(1.)))
+        self.assertEqual(str(f), '(%s + y*%s)*x' %(rn(1.), rn(-1.)))
 
         f = (4.*x)*(3*y)
         self.assertTrue(isinstance(f, optmod.function.multiply))
@@ -133,7 +133,7 @@ class TestMultiply(unittest.TestCase):
         f = x*x
         fx = f.get_derivative(x)
         self.assertEqual(fx.get_value(), 2.*3.)
-        self.assertEqual(str(fx), 'x*%s' %rn(2))
+        self.assertEqual(str(fx), 'x + x')
 
         f = x*y
         fx = f.get_derivative(x)
