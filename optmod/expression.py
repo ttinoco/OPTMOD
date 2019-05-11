@@ -27,9 +27,7 @@ class Expression(object):
         return -1.*self
     
     def __add__(self, x):
-        
-        from .function import add, multiply
-        
+                
         # Arrray
         if isinstance(x, np.ndarray):
             if self.is_zero():
@@ -54,18 +52,15 @@ class Expression(object):
         if self.is_constant() and x.is_constant():
             return make_Expression(self.__value__ + x.__value__)
 
-        # Flatten args
+        # Flat args
         args = []
-        if isinstance(self, add):
-            args.extend(self.arguments)
-        else:
-            args.append(self)
-        if isinstance(x, add):
-            args.extend(x.arguments)
-        else:
-            args.append(x)
+        for a in [self, x]:
+            if isinstance(a, add):
+                args.extend(a.arguments)
+            else:
+                args.append(a)
 
-        # Simplify args
+        # New args
         c = 0.
         new_args = OrderedDict()
         for arg in args:
@@ -89,9 +84,9 @@ class Expression(object):
                         new_args[arg] = 1.
                 else:
                     new_args[arg] = 1.
+        new_args = [key*value for key, value in new_args.items() if value != 0.]
         if c != 0.:
-            new_args[make_Expression(c)] = 1.
-        new_args = [key*value for key, value in new_args.items()]
+            new_args.append(make_Expression(c))
 
         # Return
         nargs = len(new_args)
@@ -124,13 +119,7 @@ class Expression(object):
 
         # Other
         x = make_Expression(x)
-        if self.is_zero():
-            return -x
-        if x.is_zero():
-            return self
-        if self.is_constant() and x.is_constant():
-            return make_Expression(self.__value__ - x.__value__)
-        return self+(-1.*x)
+        return self.__add__(x.__mul__(-1.))
 
     def __rsub__(self, x):
 
@@ -151,17 +140,9 @@ class Expression(object):
                 
         # Other
         x = make_Expression(x)
-        if self.is_zero():
-            return x
-        if x.is_zero():
-            return -self
-        if self.is_constant() and x.is_constant():
-            return make_Expression(x.__value__ - self.__value__)
-        return x+(-1.*self)
+        return x.__add__(self.__mul__(-1.))
 
     def __mul__(self, x):
-
-        from .function import multiply, add
 
         # Array
         if isinstance(x, np.ndarray):
@@ -189,20 +170,20 @@ class Expression(object):
         if self.is_constant() and x.is_constant():
             return make_Expression(self.__value__*x.__value__)
         if self.is_constant() and isinstance(x, add):
-            return add([self*arg for arg in x.arguments])
+            return add([self.__mul__(arg) for arg in x.arguments])
         if x.is_constant() and isinstance(self, add):
-            return add([x*arg for arg in self.arguments])
+            return add([x.__mul__(arg) for arg in self.arguments])
         if self.is_constant() and isinstance(x, multiply):
             if x.arguments[0].is_constant():
-                return (self.__value__*x.arguments[0].__value__)*x.arguments[1]
+                return x.arguments[1].__mul__(self.__value__*x.arguments[0].__value__)
             if x.arguments[1].is_constant():
-                return (self.__value__*x.arguments[1].__value__)*x.arguments[0]
+                return x.arguments[0].__mul__(self.__value__*x.arguments[1].__value__)
             return multiply([self, x])
         if x.is_constant() and isinstance(self, multiply):
             if self.arguments[0].is_constant():
-                return (x.__value__*self.arguments[0].__value__)*self.arguments[1]
+                return self.arguments[1].__mul__(x.__value__*self.arguments[0].__value__)
             if self.arguments[1].is_constant():
-                return (x.__value__*self.arguments[1].__value__)*self.arguments[0]
+                return self.arguments[0].__mul__(x.__value__*self.arguments[1].__value__)
             return multiply([self, x])
         return multiply([self, x])
 
@@ -223,9 +204,7 @@ class Expression(object):
         return self.__cmp_util__('>=', x)
 
     def __cmp_util__(self, op, x):
-        
-        from .constraint import Constraint, ConstraintArray
-        
+                
         if isinstance(x, np.ndarray):
             return ConstraintArray(np.vectorize(self.__cmp_util__)(op, x))
     
@@ -342,8 +321,6 @@ class Expression(object):
         return False
 
 def make_Expression(obj):
-
-    from .constant import Constant
     
     if isinstance(obj, Expression):
         return obj
@@ -466,8 +443,6 @@ class ExpressionMatrix(object):
 
     def __cmp_util__(self, op, x):
 
-        from .constraint import ConstraintArray
-
         if isinstance(x, ExpressionMatrix):
             return ConstraintArray(np.vectorize(lambda a,b: a.__cmp_util__(op, b))(self.data, x.data))
 
@@ -513,4 +488,8 @@ class SparseExpressionMatrix:
 
     pass
 
-
+# Circular imports
+from .constant import Constant
+from .function import add, multiply
+from .constraint import Constraint, ConstraintArray
+        

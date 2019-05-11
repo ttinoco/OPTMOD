@@ -8,7 +8,7 @@ class TestMultiply(unittest.TestCase):
     def test_contruction(self):
 
         x = optmod.variable.VariableScalar(name='x')
-        f = optmod.function.multiply([x, 1.])
+        f = optmod.function.multiply([x, optmod.expression.make_Expression(1.)])
         self.assertTrue(isinstance(f, optmod.function.multiply))
         self.assertEqual(f.name, 'multiply')
         self.assertEqual(len(f.arguments), 2)
@@ -18,7 +18,7 @@ class TestMultiply(unittest.TestCase):
 
         self.assertRaises(AssertionError, optmod.function.multiply, [1., x, 2.])
         self.assertRaises(AssertionError, optmod.function.multiply, [x])
-        self.assertRaises(AssertionError, optmod.function.multiply, x)
+        self.assertRaises(TypeError, optmod.function.multiply, x)
 
     def test_constant(self):
 

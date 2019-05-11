@@ -8,7 +8,7 @@ class TestFunctions(unittest.TestCase):
 
         x = optmod.variable.VariableScalar(name='x')
         
-        f = optmod.function.Function([x, 1.])
+        f = optmod.function.Function([x, optmod.expression.make_Expression(1.)])
 
         self.assertTrue(isinstance(f, optmod.function.Function))
         self.assertEqual(len(f.arguments), 2)

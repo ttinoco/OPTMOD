@@ -9,7 +9,7 @@ class TestSubtract(unittest.TestCase):
         
         x = optmod.variable.VariableScalar(name='x')
 
-        f = optmod.function.subtract([x, 1.])
+        f = optmod.function.subtract([x, optmod.expression.make_Expression(1.)])
         self.assertEqual(f.name, 'subtract')
         self.assertEqual(len(f.arguments), 2)
         self.assertTrue(f.arguments[0] is x)

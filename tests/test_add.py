@@ -9,7 +9,7 @@ class TestAdd(unittest.TestCase):
 
         x = optmod.variable.VariableScalar(name='x')
 
-        f = optmod.function.add([x, 1.])
+        f = optmod.function.add([x, optmod.expression.make_Expression(1.)])
         self.assertEqual(f.name, 'add')
         self.assertEqual(len(f.arguments), 2)
         self.assertTrue(f.arguments[0] is x)

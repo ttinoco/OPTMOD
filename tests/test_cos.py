@@ -14,7 +14,7 @@ class TestCos(unittest.TestCase):
         self.assertEqual(len(f.arguments), 1)
         self.assertTrue(f.arguments[0] is x)
 
-        self.assertRaises(AssertionError, optmod.cos, [x, 1., 2.])
+        self.assertRaises(TypeError, optmod.cos, [x, 1., 2.])
 
     def test_constant(self):
 

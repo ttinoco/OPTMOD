@@ -13,8 +13,7 @@ class Function(Expression):
     def __init__(self, args=[]):
 
         Expression.__init__(self)
-        args = args if isinstance(args, list) else [args]
-        self.arguments = list(map(make_Expression, args))
+        self.arguments = args
 
     def __repr__(self):
         
@@ -101,20 +100,20 @@ class Function(Expression):
 
 class ElementWiseFunction(Function):
 
-    def __new__(cls, args):
+    def __new__(cls, arg):
         
-        if isinstance(args, ExpressionMatrix):
-            return ExpressionMatrix(np.vectorize(cls)(args.data))
+        if isinstance(arg, ExpressionMatrix):
+            return ExpressionMatrix(np.vectorize(cls)(arg.data))
 
-        elif isinstance(args, np.ndarray):
-            return ExpressionMatrix(np.vectorize(cls)(args))
+        elif isinstance(arg, np.ndarray):
+            return ExpressionMatrix(np.vectorize(cls)(arg))
 
         else:
             return super(ElementWiseFunction, cls).__new__(cls)
         
-    def __init__(self, args):
+    def __init__(self, arg):
 
-        Function.__init__(self, args)
+        Function.__init__(self, [make_Expression(arg)])
         assert(len(self.arguments) == 1)
         
 class add(Function):
@@ -290,20 +289,20 @@ class multiply(Function):
 
 class negate(ElementWiseFunction):
 
-    def __new__(cls, args):
+    def __new__(cls, arg):
 
-        if isinstance(args, negate):
-            return args.arguments[0]
+        if isinstance(arg, negate):
+            return arg.arguments[0]
 
-        elif isinstance(args, Constant):
-            return make_Expression(-args.__value__)
+        elif isinstance(arg, Constant):
+            return make_Expression(-arg.__value__)
 
         else:
-            return super(negate, cls).__new__(cls, args)
+            return super(negate, cls).__new__(cls, arg)
             
-    def __init__(self, args):
+    def __init__(self, arg):
 
-        ElementWiseFunction.__init__(self, args)
+        ElementWiseFunction.__init__(self, arg)
         
         self.name = 'negate'
 
@@ -349,17 +348,17 @@ class negate(ElementWiseFunction):
 
 class sin(ElementWiseFunction):
 
-    def __new__(cls, args):
+    def __new__(cls, arg):
 
-        if isinstance(args, Constant):
-            return make_Expression(np.sin(args.__value__))
+        if isinstance(arg, Constant):
+            return make_Expression(np.sin(arg.__value__))
 
         else:
-            return super(sin, cls).__new__(cls, args)
+            return super(sin, cls).__new__(cls, arg)
 
-    def __init__(self, args):
+    def __init__(self, arg):
 
-        ElementWiseFunction.__init__(self, args)
+        ElementWiseFunction.__init__(self, arg)
 
         self.name = 'sin'
 
@@ -381,17 +380,17 @@ class sin(ElementWiseFunction):
 
 class cos(ElementWiseFunction):
 
-    def __new__(cls, args):
+    def __new__(cls, arg):
 
-        if isinstance(args, Constant):
-            return make_Expression(np.cos(args.__value__))
+        if isinstance(arg, Constant):
+            return make_Expression(np.cos(arg.__value__))
 
         else:
-            return super(cos, cls).__new__(cls, args)
+            return super(cos, cls).__new__(cls, arg)
 
-    def __init__(self, args):
+    def __init__(self, arg):
 
-        ElementWiseFunction.__init__(self, args)
+        ElementWiseFunction.__init__(self, arg)
         
         self.name = 'cos'
 

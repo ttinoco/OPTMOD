@@ -14,7 +14,7 @@ class TestSin(unittest.TestCase):
         self.assertEqual(len(f.arguments), 1)
         self.assertTrue(f.arguments[0] is x)
 
-        self.assertRaises(AssertionError, optmod.sin, [x, 1., 2.])
+        self.assertRaises(TypeError, optmod.sin, [x, 1., 2.])
 
     def test_constant(self):
 
