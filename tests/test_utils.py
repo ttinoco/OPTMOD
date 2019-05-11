@@ -24,6 +24,8 @@ class TestUtils(unittest.TestCase):
         # matrix
         f = optmod.sum(y)
         self.assertTrue(isinstance(f, optmod.expression.Expression))
+        self.assertTrue(f.is_function())
+        self.assertEqual(len(f.arguments), 6)
         self.assertEqual(str(f), 'y[0,0] + y[0,1] + y[1,0] + y[1,1] + y[2,0] + y[2,1]')
 
         # matrix axis

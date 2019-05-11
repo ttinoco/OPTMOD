@@ -29,41 +29,42 @@ class TestSubtract(unittest.TestCase):
 
     def test_scalar_scalar(self):
 
+        rn = optmod.utils.repr_number
+
         x = optmod.variable.VariableScalar(name='x', value=2.)
         y = optmod.variable.VariableScalar(name='y', value=3.)
 
         f = x - 1.
-        self.assertTrue(isinstance(f, optmod.function.subtract))
+        self.assertTrue(isinstance(f, optmod.function.add))
         self.assertTrue(f.arguments[0] is x)
         self.assertTrue(isinstance(f.arguments[1], optmod.constant.Constant))
-        self.assertEqual(f.arguments[1].get_value(), 1.)
+        self.assertEqual(f.arguments[1].get_value(), -1.)
         self.assertEqual(f.get_value(), 1.)
-        self.assertEqual(str(f), 'x - %s' %optmod.utils.repr_number(1.))
+        self.assertEqual(str(f), 'x + %s' %rn(-1.))
         
         f = 1. - x
-        self.assertTrue(isinstance(f, optmod.function.subtract))
-        self.assertTrue(f.arguments[1] is x)
-        self.assertTrue(isinstance(f.arguments[0], optmod.constant.Constant))
-        self.assertEqual(f.arguments[0].get_value(), 1.)
+        self.assertTrue(isinstance(f, optmod.function.add))
+        self.assertTrue(f.arguments[0].is_function())
+        self.assertTrue(isinstance(f.arguments[1], optmod.constant.Constant))
+        self.assertEqual(f.arguments[0].get_value(), -2)
         self.assertEqual(f.get_value(), -1.)
-        self.assertEqual(str(f), '%s - x' %optmod.utils.repr_number(1.))
+        self.assertEqual(str(f), 'x*%s + %s' %(rn(-1.), rn(1.)))
 
         f = x - y
-        self.assertTrue(isinstance(f, optmod.function.subtract))
+        self.assertTrue(isinstance(f, optmod.function.add))
         self.assertTrue(f.arguments[0] is x)
-        self.assertTrue(f.arguments[1] is y)
+        self.assertTrue(f.arguments[1].is_function())
         self.assertEqual(f.get_value(), -1.)
-        self.assertEqual(str(f), 'x - y')
+        self.assertEqual(str(f), 'x + y*%s' %rn(-1.))
 
         f = 3. - x - y
-        self.assertTrue(isinstance(f, optmod.function.subtract))
-        self.assertTrue(isinstance(f.arguments[0], optmod.function.subtract))
-        self.assertTrue(f.arguments[0].arguments[1] is x)
-        self.assertTrue(isinstance(f.arguments[0].arguments[0], optmod.constant.Constant))
-        self.assertEqual(f.arguments[0].arguments[0].get_value(), 3)
-        self.assertTrue(f.arguments[1] is y)
+        self.assertTrue(isinstance(f, optmod.function.add))
+        self.assertTrue(isinstance(f.arguments[0], optmod.function.multiply))
+        self.assertTrue(isinstance(f.arguments[1], optmod.function.multiply))
+        self.assertTrue(f.arguments[2].is_constant())
+        self.assertEqual(f.arguments[2].get_value(), 3)
         self.assertEqual(f.get_value(), -2.)
-        self.assertEqual(str(f), '%s - x - y' %optmod.utils.repr_number(3.))
+        self.assertEqual(str(f), 'x*%s + y*%s + %s' %(rn(-1.), rn(-1.), rn(3.)))
 
     def test_scalar_matrix(self):
 
@@ -79,103 +80,115 @@ class TestSubtract(unittest.TestCase):
         for i in range(2):
             for j in range(3):
                 fij = f[i,j]
-                self.assertTrue(isinstance(fij, optmod.function.subtract))
+                self.assertTrue(isinstance(fij, optmod.function.add))
                 self.assertTrue(fij.arguments[0] is x)
-                self.assertEqual(fij.arguments[1].get_value(), r[i,j])
+                self.assertEqual(fij.arguments[1].get_value(), -r[i,j])
         self.assertTrue(isinstance(f.get_value(), np.matrix))
         self.assertTrue(np.all(f.get_value() == 2. - r))
         self.assertEqual(str(f),
-                         ('[[ x - %s, x - %s, x - %s ],\n' %(rn(r[0,0]), rn(r[0,1]), rn(r[0,2])) +
-                          ' [ x - %s, x - %s, x - %s ]]\n' %(rn(r[1,0]), rn(r[1,1]), rn(r[1,2]))))
+                         ('[[ x + %s, x + %s, x + %s ],\n' %(rn(-r[0,0]), rn(-r[0,1]), rn(-r[0,2])) +
+                          ' [ x + %s, x + %s, x + %s ]]\n' %(rn(-r[1,0]), rn(-r[1,1]), rn(-r[1,2]))))
 
         f = r - x
         self.assertTrue(isinstance(f, optmod.expression.ExpressionMatrix))
         for i in range(2):
             for j in range(3):
                 fij = f[i,j]
-                self.assertTrue(isinstance(fij, optmod.function.subtract))
-                self.assertTrue(fij.arguments[1] is x)
-                self.assertEqual(fij.arguments[0].get_value(), r[i,j])
+                self.assertTrue(isinstance(fij, optmod.function.add))
+                self.assertTrue(fij.arguments[1].is_constant())
+                self.assertEqual(fij.arguments[1].get_value(), r[i,j])
         self.assertTrue(isinstance(f.get_value(), np.matrix))
         self.assertTrue(np.all(f.get_value() == r - 2.))
         self.assertEqual(str(f),
-                         ('[[ %s - x, %s - x, %s - x ],\n' %(rn(r[0,0]), rn(r[0,1]), rn(r[0,2])) +
-                          ' [ %s - x, %s - x, %s - x ]]\n' %(rn(r[1,0]), rn(r[1,1]), rn(r[1,2]))))
+                         ('[[ x*%s + %s, x*%s + %s, x*%s + %s ],\n' %(rn(-1.), rn(r[0,0]),
+                                                                      rn(-1.), rn(r[0,1]),
+                                                                      rn(-1.), rn(r[0,2])) +
+                          ' [ x*%s + %s, x*%s + %s, x*%s + %s ]]\n' %(rn(-1.), rn(r[1,0]),
+                                                                       rn(-1.), rn(r[1,1]),
+                                                                       rn(-1.), rn(r[1,2]))))
 
         f = x - np.matrix(r)
         self.assertTrue(isinstance(f, optmod.expression.ExpressionMatrix))
         self.assertTrue(np.all(f.get_value() == 2. - r))
         self.assertEqual(str(f),
-                         ('[[ x - %s, x - %s, x - %s ],\n' %(rn(r[0,0]), rn(r[0,1]), rn(r[0,2])) +
-                          ' [ x - %s, x - %s, x - %s ]]\n' %(rn(r[1,0]), rn(r[1,1]), rn(r[1,2]))))
+                         ('[[ x + %s, x + %s, x + %s ],\n' %(rn(-r[0,0]), rn(-r[0,1]), rn(-r[0,2])) +
+                          ' [ x + %s, x + %s, x + %s ]]\n' %(rn(-r[1,0]), rn(-r[1,1]), rn(-r[1,2]))))
 
         f = np.matrix(r) - x
         self.assertTrue(isinstance(f, optmod.expression.ExpressionMatrix))
         self.assertTrue(np.all(f.get_value() == r - 2.))
         self.assertEqual(str(f),
-                         ('[[ %s - x, %s - x, %s - x ],\n' %(rn(r[0,0]), rn(r[0,1]), rn(r[0,2])) +
-                          ' [ %s - x, %s - x, %s - x ]]\n' %(rn(r[1,0]), rn(r[1,1]), rn(r[1,2]))))
-
+                         ('[[ x*%s + %s, x*%s + %s, x*%s + %s ],\n' %(rn(-1.), rn(r[0,0]),
+                                                                      rn(-1.), rn(r[0,1]),
+                                                                      rn(-1.), rn(r[0,2])) +
+                          ' [ x*%s + %s, x*%s + %s, x*%s + %s ]]\n' %(rn(-1.), rn(r[1,0]),
+                                                                      rn(-1.), rn(r[1,1]),
+                                                                      rn(-1.), rn(r[1,2]))))
+                         
         f = y - 1
         self.assertTrue(isinstance(f, optmod.expression.ExpressionMatrix))
         for i in range(2):
             for j in range(3):
                 fij = f[i,j]
-                self.assertTrue(isinstance(fij, optmod.function.subtract))
+                self.assertTrue(isinstance(fij, optmod.function.add))
                 self.assertTrue(fij.arguments[0] is y[i,j])
-                self.assertEqual(fij.arguments[1].get_value(), 1.)
+                self.assertEqual(fij.arguments[1].get_value(), -1.)
         self.assertTrue(isinstance(f.get_value(), np.matrix))
         self.assertTrue(np.all(f.get_value() == np.array(value) - 1))
         self.assertEqual(str(f),
-                         ('[[ y[0,0] - %s, y[0,1] - %s, y[0,2] - %s ],\n' %(rn(1), rn(1), rn(1)) +
-                          ' [ y[1,0] - %s, y[1,1] - %s, y[1,2] - %s ]]\n' %(rn(1), rn(1), rn(1))))
+                         ('[[ y[0,0] + %s, y[0,1] + %s, y[0,2] + %s ],\n' %(rn(-1), rn(-1), rn(-1)) +
+                          ' [ y[1,0] + %s, y[1,1] + %s, y[1,2] + %s ]]\n' %(rn(-1), rn(-1), rn(-1))))
 
         f = 1 - y
         for i in range(2):
             for j in range(3):
                 fij = f[i,j]
-                self.assertTrue(isinstance(fij, optmod.function.subtract))
+                self.assertTrue(isinstance(fij, optmod.function.add))
         self.assertTrue(isinstance(f, optmod.expression.ExpressionMatrix))
         self.assertTrue(np.all(f.get_value() == 1. - np.array(value)))
         self.assertEqual(str(f),
-                         ('[[ %s - y[0,0], %s - y[0,1], %s - y[0,2] ],\n' %(rn(1), rn(1), rn(1)) +
-                          ' [ %s - y[1,0], %s - y[1,1], %s - y[1,2] ]]\n' %(rn(1), rn(1), rn(1))))
+                         ('[[ y[0,0]*%s + %s, y[0,1]*%s + %s, y[0,2]*%s + %s ],\n' %(rn(-1), rn(1.), 
+                                                                                     rn(-1), rn(1.),
+                                                                                     rn(-1), rn(1.)) +
+                          ' [ y[1,0]*%s + %s, y[1,1]*%s + %s, y[1,2]*%s + %s ]]\n' %(rn(-1), rn(1.),
+                                                                                     rn(-1), rn(1.),
+                                                                                     rn(-1), rn(1.))))
 
         f = x - y
         self.assertTrue(isinstance(f, optmod.expression.ExpressionMatrix))
         for i in range(2):
             for j in range(3):
                 fij = f[i,j]
-                self.assertTrue(isinstance(fij, optmod.function.subtract))
-                self.assertTrue(fij.arguments[1] is y[i,j])
+                self.assertTrue(isinstance(fij, optmod.function.add))
+                self.assertTrue(fij.arguments[1].is_function())
                 self.assertTrue(fij.arguments[0] is x)
         self.assertTrue(isinstance(f.get_value(), np.matrix))
         self.assertTrue(np.all(f.get_value() == 2. - np.array(value)))
         self.assertEqual(str(f),
-                         ('[[ x - y[0,0], x - y[0,1], x - y[0,2] ],\n' +
-                          ' [ x - y[1,0], x - y[1,1], x - y[1,2] ]]\n'))
+                         ('[[ x + y[0,0]*%s, x + y[0,1]*%s, x + y[0,2]*%s ],\n' %(rn(-1.), rn(-1.), rn(-1.)) +
+                          ' [ x + y[1,0]*%s, x + y[1,1]*%s, x + y[1,2]*%s ]]\n' %(rn(-1.), rn(-1.), rn(-1.))))
 
         f = y - x
         self.assertTrue(isinstance(f, optmod.expression.ExpressionMatrix))
         for i in range(2):
             for j in range(3):
                 fij = f[i,j]
-                self.assertTrue(isinstance(fij, optmod.function.subtract))
+                self.assertTrue(isinstance(fij, optmod.function.add))
                 self.assertTrue(fij.arguments[0] is y[i,j])
-                self.assertTrue(fij.arguments[1] is x)
+                self.assertTrue(fij.arguments[1].is_function())
         self.assertTrue(isinstance(f.get_value(), np.matrix))
         self.assertTrue(np.all(f.get_value() == np.array(value) - 2.))
         self.assertEqual(str(f),
-                         ('[[ y[0,0] - x, y[0,1] - x, y[0,2] - x ],\n' +
-                          ' [ y[1,0] - x, y[1,1] - x, y[1,2] - x ]]\n'))
+                         ('[[ y[0,0] + x*%s, y[0,1] + x*%s, y[0,2] + x*%s ],\n' %(rn(-1.), rn(-1.), rn(-1.)) +
+                          ' [ y[1,0] + x*%s, y[1,1] + x*%s, y[1,2] + x*%s ]]\n' %(rn(-1.), rn(-1.), rn(-1.))))
 
         f = (y - 1) - (3 - x)
         self.assertTrue(isinstance(f, optmod.expression.ExpressionMatrix))
         for i in range(2):
             for j in range(3):
-                self.assertEqual(str(f[i,j]), 'y[%d,%d] - %s - (%s - x)' %(i, j, rn(1), rn(3)))
-                self.assertTrue(isinstance(f[i,j].arguments[0], optmod.function.subtract))
-                self.assertTrue(isinstance(f[i,j].arguments[1], optmod.function.subtract))
+                self.assertEqual(str(f[i,j]), 'y[%d,%d] + x + %s' %(i, j, rn(-1-3)))
+                self.assertTrue(f[i,j].is_function())
+                self.assertEqual(len(f[i,j].arguments), 3)
         self.assertTrue(np.all(f.get_value() == (np.array(value) - 1.) - (3. - 2.)))
 
     def test_matrix_matrix(self):
@@ -193,7 +206,7 @@ class TestSubtract(unittest.TestCase):
         for i in range(2):
             for j in range(3):
                 fij = f[i,j]
-                self.assertEqual(str(fij), 'x[%d,%d] - %s' %(i, j, rn(value2[i,j])))
+                self.assertEqual(str(fij), 'x[%d,%d] + %s' %(i, j, rn(-value2[i,j])))
         self.assertTrue(np.all(f.get_value() == np.matrix(value1) - value2))
                 
         f = value2 - x
@@ -202,7 +215,7 @@ class TestSubtract(unittest.TestCase):
         for i in range(2):
             for j in range(3):
                 fij = f[i,j]
-                self.assertEqual(str(fij), '%s - x[%d,%d]' %(rn(value2[i,j]), i, j))
+                self.assertEqual(str(fij), 'x[%d,%d]*%s + %s' %(i,j, rn(-1), rn(value2[i,j])))
         self.assertTrue(np.all(f.get_value() == value2 - np.matrix(value1)))
 
         f = x - y
@@ -211,7 +224,7 @@ class TestSubtract(unittest.TestCase):
         for i in range(2):
             for j in range(3):
                 fij = f[i,j]
-                self.assertEqual(str(fij), 'x[%d,%d] - y[%d,%d]' %(i, j, i, j))
+                self.assertEqual(str(fij), 'x[%d,%d] + y[%d,%d]*%s' %(i, j, i, j, rn(-1.)))
         self.assertTrue(np.all(f.get_value() == np.matrix(value1) - value2))
 
         f = y - x
@@ -220,7 +233,7 @@ class TestSubtract(unittest.TestCase):
         for i in range(2):
             for j in range(3):
                 fij = f[i,j]
-                self.assertEqual(str(fij), 'y[%d,%d] - x[%d,%d]' %(i, j, i, j))
+                self.assertEqual(str(fij), 'y[%d,%d] + x[%d,%d]*%s' %(i, j, i, j, rn(-1.)))
         self.assertTrue(np.all(f.get_value() == value2 - np.matrix(value1)))
 
     def test_zero(self):
@@ -231,8 +244,8 @@ class TestSubtract(unittest.TestCase):
         self.assertTrue(f is x)
 
         f = 0 - x
-        self.assertTrue(isinstance(f, optmod.function.negate))
-        self.assertEqual(str(f), '-x')
+        self.assertTrue(isinstance(f, optmod.function.multiply))
+        self.assertEqual(str(f), 'x*-1.00e+00')
 
     def test_analyze(self):
 
@@ -257,16 +270,14 @@ class TestSubtract(unittest.TestCase):
         prop = f.__analyze__(nx.MultiDiGraph(), '')
         self.assertTrue(prop['affine'])
         self.assertEqual(prop['b'], 0.)
-        self.assertEqual(len(prop['a']), 2)
-        self.assertEqual(prop['a'][x], 0.)
+        self.assertEqual(len(prop['a']), 1)
         self.assertEqual(prop['a'][y], -1.)
 
         f = x - y - 10. - x
         prop = f.__analyze__(nx.MultiDiGraph(), '')
         self.assertTrue(prop['affine'])
         self.assertEqual(prop['b'], -10.)
-        self.assertEqual(len(prop['a']), 2)
-        self.assertEqual(prop['a'][x], 0.)
+        self.assertEqual(len(prop['a']), 1)
         self.assertEqual(prop['a'][y], -1.)
 
     def test_derivative(self):

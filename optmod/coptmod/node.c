@@ -102,6 +102,9 @@ char* NODE_get_type_name(Node* n) {
 
 double NODE_get_value(Node* n) {
 
+  int i;
+  double temp;
+
   if (!n)
     return 0;
   
@@ -114,7 +117,12 @@ double NODE_get_value(Node* n) {
   case NODE_TYPE_VARIABLE:
     return n->value;
   case NODE_TYPE_ADD:
-    return NODE_get_value(n->arg1) + NODE_get_value(n->arg2);
+    if (n->arg1 && n->arg2)
+      return NODE_get_value(n->arg1) + NODE_get_value(n->arg2);
+    temp = 0;
+    for (i = 0; i < n->num_args; i++)
+      temp += NODE_get_value(*(n->args+i));
+    return temp;
   case NODE_TYPE_SUBTRACT:
     return NODE_get_value(n->arg1) - NODE_get_value(n->arg2);
   case NODE_TYPE_NEGATE:
@@ -221,7 +229,7 @@ void NODE_set_arg2(Node* n, Node* arg2) {
 void NODE_set_args(Node* n, Node** args, int num) {
   if (n) {
     if (n->args)
-      free(args);
+      free(n->args);
     n->args = args;
     n->num_args = num;
   }

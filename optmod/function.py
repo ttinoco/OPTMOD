@@ -93,7 +93,6 @@ class Function(Expression):
             process = new_nodes
         for n in processed:
             n.__set_value__()
-        print("LEN", len(processed))
         return self.__value__
 
     def is_function(self):
@@ -125,7 +124,7 @@ class add(Function):
         Function.__init__(self, args)
         
         self.name = 'add'
-        assert(len(self.arguments) == 2)
+        assert(len(self.arguments) >= 2)
         
     def __repr__(self):
 
@@ -133,34 +132,35 @@ class add(Function):
         return (''.join(args))[:-3]
 
     def __partial__(self, arg):
-        
-        if arg is self.arguments[0] or arg is self.arguments[1]:
-            return make_Expression(1.)
 
-        else:
-            raise ValueError('invalid argument')
+        for x in self.arguments:
+            if arg is x:
+                return make_Expression(1.)
+        raise ValueError('invalid argument')
 
     def __analyze__(self, G, prefix):
 
-        arg1, arg2 = self.arguments
+        args = self.arguments
         
         G.add_node(self.__node__(prefix), item=self)
-        G.add_edge(self.__node__(prefix), arg1.__node__(prefix+'0.'))
-        G.add_edge(self.__node__(prefix), arg2.__node__(prefix+'1.'))
+        for i, arg in enumerate(args):
+            G.add_edge(self.__node__(prefix), arg.__node__(prefix+'%d.' %i))
 
-        prop1 = arg1.__analyze__(G, prefix+'0.')
-        prop2 = arg2.__analyze__(G, prefix+'1.')
+        props = []
+        for i, arg in enumerate(args):
+            props.append(arg.__analyze__(G, prefix+'%d.' %i))
 
-        new_a = prop1['a']
-        for x in prop2['a']:
-            if x in new_a:
-                new_a[x] += prop2['a'][x]
-            else:
-                new_a[x] = prop2['a'][x]
+        new_a = props[0]['a']
+        for prop in props[1:]:
+            for x in prop['a']:
+                if x in new_a:
+                    new_a[x] += prop['a'][x]
+                else:
+                    new_a[x] = prop['a'][x]
 
-        return {'affine': prop1['affine'] and prop2['affine'],
+        return {'affine': all([prop['affine'] for prop in props]),
                 'a': new_a,
-                'b': prop1['b'] + prop2['b']}
+                'b': sum([prop['b'] for prop in props])}
 
     def __evaluator_node_type__(self):
             
@@ -243,9 +243,7 @@ class multiply(Function):
         a = self.arguments[0]
         b = self.arguments[1]
 
-        needp = lambda x: True if (isinstance(x, add) or
-                                   isinstance(x, subtract) or
-                                   isinstance(x, negate)) else False
+        needp = lambda x: True if isinstance(x, add) else False
 
         return '%s*%s' %('(%s)' %str(a) if needp(a) else '%s' %str(a),
                          '(%s)' %str(b) if needp(b) else '%s' %str(b))

@@ -26,18 +26,23 @@ class TestNegate(unittest.TestCase):
 
     def test_scalar(self):
 
+        rn = optmod.utils.repr_number
+
         x = optmod.variable.VariableScalar(name='x', value=2.)
 
         f = -x
-        self.assertTrue(isinstance(f, optmod.function.negate))
-        self.assertEqual(f.name, 'negate')
-        self.assertEqual(len(f.arguments), 1)
+        self.assertTrue(isinstance(f, optmod.function.multiply))
+        self.assertEqual(f.name, 'multiply')
+        self.assertEqual(len(f.arguments), 2)
         self.assertTrue(f.arguments[0] is x)
+        self.assertTrue(f.arguments[1].is_constant())
         
         self.assertEqual(f.get_value(), -2.)
-        self.assertEqual(str(f), '-x')
+        self.assertEqual(str(f), 'x*%s' %rn(-1.))
 
     def test_matrix(self):
+
+        rn = optmod.utils.repr_number
 
         value = np.random.randn(2,3)
         x = optmod.variable.VariableMatrix(name='x', value=value)
@@ -47,11 +52,11 @@ class TestNegate(unittest.TestCase):
         for i in range(2):
             for j in range(3):
                 fij = f[i,j]
-                self.assertTrue(isinstance(fij, optmod.function.negate))
-                self.assertEqual(len(fij.arguments), 1)
+                self.assertTrue(isinstance(fij, optmod.function.multiply))
+                self.assertEqual(len(fij.arguments), 2)
                 self.assertTrue(fij.arguments[0] is x[i,j])
                 self.assertEqual(fij.get_value(), -value[i,j])
-                self.assertEqual(str(fij), '-x[%d,%d]' %(i,j))
+                self.assertEqual(str(fij), 'x[%d,%d]*%s' %(i,j,rn(-1.)))
 
     def test_function(self):
 
@@ -64,11 +69,11 @@ class TestNegate(unittest.TestCase):
 
         f = -(x + 1)
         self.assertEqual(f.get_value(), -(3.+1.))
-        self.assertEqual(str(f), '-(x + %s)' %rn(1.))
+        self.assertEqual(str(f), '%s*x + %s' %(rn(-1),rn(-1)))
 
         f = -(1 - x)
         self.assertEqual(f.get_value(), -(1.-3.))
-        self.assertEqual(str(f), '-(%s - x)' %rn(1.))
+        self.assertEqual(str(f), 'x + %s' %rn(-1.))
 
         f = -(-x)
         self.assertEqual(f.get_value(), 3.)

@@ -6,7 +6,7 @@ import numpy as np
 class TestExpressions(unittest.TestCase):
 
     def test_get_variables(self):
-
+        
         x = optmod.VariableMatrix(name='x', shape=(2,3))
         y = optmod.VariableScalar(name='y')
 
@@ -44,7 +44,7 @@ class TestExpressions(unittest.TestCase):
         t2 = time.time()
         self.assertGreater((t1-t0)/(t2-t1), 15.)
 
-    def test_matrix_get_fast_evalulator(self):
+    def test_matrix_get_fast_evaluator(self):
 
         xval = np.random.randn(4,3)
         x = optmod.VariableMatrix(name='x', value=xval)
@@ -78,7 +78,7 @@ class TestExpressions(unittest.TestCase):
         x = np.array([v.get_value() for v in variables])
         e.eval(x)
 
-        self.assertTrue(np.all(e.get_value() == f.get_value()))
+        self.assertLess(np.max(np.abs(e.get_value() - f.get_value())), 1e-10)
 
         t0 = time.time()
         for i in range(500):

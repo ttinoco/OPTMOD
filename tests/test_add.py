@@ -16,7 +16,8 @@ class TestAdd(unittest.TestCase):
         self.assertTrue(isinstance(f.arguments[1], optmod.constant.Constant))
         self.assertEqual(f.arguments[1].get_value(), 1.)
 
-        self.assertRaises(AssertionError, optmod.function.add, [x, 1., 2.])
+        self.assertRaises(AssertionError, optmod.function.add, [x])
+        self.assertRaises(AssertionError, optmod.function.add, [])
 
     def test_constant_constant(self):
 
@@ -55,15 +56,14 @@ class TestAdd(unittest.TestCase):
         self.assertEqual(f.get_value(), 5.)
         self.assertEqual(str(f), 'x + y')
 
-        f = 3. + x + y
+        f = 4. + x + y
         self.assertTrue(isinstance(f, optmod.function.add))
-        self.assertTrue(isinstance(f.arguments[0], optmod.function.add))
-        self.assertTrue(f.arguments[0].arguments[0] is x)
-        self.assertTrue(isinstance(f.arguments[0].arguments[1], optmod.constant.Constant))
-        self.assertEqual(f.arguments[0].arguments[1].get_value(), 3)
+        self.assertTrue(isinstance(f.arguments[2], optmod.constant.Constant))
+        self.assertEqual(f.arguments[2].get_value(), 4.)
+        self.assertTrue(f.arguments[0] is x)
         self.assertTrue(f.arguments[1] is y)
-        self.assertEqual(f.get_value(), 8.)
-        self.assertEqual(str(f), 'x + %s + y' %optmod.utils.repr_number(3.))
+        self.assertEqual(f.get_value(), 9.)
+        self.assertEqual(str(f), 'x + y + %s' %optmod.utils.repr_number(4.))
         
     def test_scalar_matrix(self):
 
@@ -169,9 +169,10 @@ class TestAdd(unittest.TestCase):
         self.assertTrue(isinstance(f, optmod.expression.ExpressionMatrix))
         for i in range(2):
             for j in range(3):
-                self.assertEqual(str(f[i,j]), 'y[%d,%d] + %s + x + %s' %(i, j, rn(1), rn(3)))
-                self.assertTrue(isinstance(f[i,j].arguments[0], optmod.function.add))
-                self.assertTrue(isinstance(f[i,j].arguments[1], optmod.function.add))
+                self.assertEqual(str(f[i,j]), 'y[%d,%d] + x + %s' %(i, j, rn(1+3)))
+                self.assertTrue(f[i,j].arguments[0] is y[i,j])
+                self.assertTrue(f[i,j].arguments[1] is x)
+                self.assertTrue(f[i,j].arguments[2].is_constant())
         self.assertTrue(np.all(f.get_value() == np.array(value) + 1. + 3. + 2.))
 
     def test_matrix_matrix(self):

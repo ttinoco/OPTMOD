@@ -44,6 +44,24 @@ class TestCoptmod(unittest.TestCase):
         self.assertEqual(E.num_inputs, 2)
         self.assertEqual(E.num_outputs, 20)
 
+        f = 4*x + y + 10 + 2*(x+y)
+
+        E = optmod.coptmod.Evaluator(2, 20)
+
+        self.assertEqual(E.max_nodes, 20)
+        self.assertEqual(E.num_nodes, 0)
+        self.assertEqual(E.num_inputs, 2)
+        self.assertEqual(E.num_outputs, 20)
+        self.assertTupleEqual(E.shape, (1, 20))
+        self.assertFalse(E.scalar_output)
+
+        f.__fill_evaluator__(E)
+        
+        self.assertEqual(E.max_nodes, 20)
+        self.assertEqual(E.num_nodes, 8)
+        self.assertEqual(E.num_inputs, 2)
+        self.assertEqual(E.num_outputs, 20)        
+
     def test_evaluator_dynamic_resize(self):
 
         x = optmod.VariableScalar(name='x', value=3.)
@@ -173,5 +191,5 @@ class TestCoptmod(unittest.TestCase):
         self.assertTrue(isinstance(val, np.matrix))
         e.eval([5., 8.])
         val = e.get_value()
-        self.assertEqual(val[0,0], 3.*(5.+np.sin(8.)))
-        self.assertEqual(val[0,1], 5.+8.)        
+        self.assertAlmostEqual(val[0,0], 3.*(5.+np.sin(8.)))
+        self.assertAlmostEqual(val[0,1], 5.+8.)        

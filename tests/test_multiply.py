@@ -29,7 +29,7 @@ class TestMultiply(unittest.TestCase):
         self.assertTrue(f.is_constant(20.))
         
     def test_scalar_scalar(self):
-
+        
         rn = optmod.utils.repr_number
         
         x = optmod.variable.VariableScalar(name='x', value=2.)
@@ -68,7 +68,7 @@ class TestMultiply(unittest.TestCase):
         self.assertTrue(f.arguments[0].is_function())
         self.assertTrue(f.arguments[1] is x)
         self.assertEqual(f.get_value(), -4)
-        self.assertEqual(str(f), '(%s - y)*x' %rn(1.))
+        self.assertEqual(str(f), '(y*%s + %s)*x' %(rn(-1.), rn(1.)))
 
         f = (4.*x)*(3*y)
         self.assertTrue(isinstance(f, optmod.function.multiply))
@@ -79,16 +79,16 @@ class TestMultiply(unittest.TestCase):
 
         f = -x*5
         self.assertTrue(isinstance(f, optmod.function.multiply))
-        self.assertTrue(f.arguments[0].is_function())
         self.assertTrue(f.arguments[1].is_constant())
-        self.assertEqual(str(f), '(-x)*%s' %rn(5))
+        self.assertTrue(f.arguments[0].is_variable())
+        self.assertEqual(str(f), 'x*%s' %rn(-5))
         self.assertEqual(f.get_value(), -10.)
 
         f = y*-x
         self.assertTrue(isinstance(f, optmod.function.multiply))
         self.assertTrue(f.arguments[0] is y)
         self.assertTrue(f.arguments[1].is_function())
-        self.assertEqual(str(f), 'y*(-x)')
+        self.assertEqual(str(f), 'y*x*%s' %rn(-1))
         self.assertEqual(f.get_value(), -6.)
 
         f = optmod.sin(x)*y
@@ -124,6 +124,8 @@ class TestMultiply(unittest.TestCase):
         
     def test_derivative(self):
 
+        rn = optmod.utils.repr_number
+
         x = optmod.variable.VariableScalar(name='x', value=3.)
         y = optmod.variable.VariableScalar(name='y', value=4.)
         z = optmod.variable.VariableScalar(name='z', value=5.)
@@ -131,7 +133,7 @@ class TestMultiply(unittest.TestCase):
         f = x*x
         fx = f.get_derivative(x)
         self.assertEqual(fx.get_value(), 2.*3.)
-        self.assertEqual(str(fx), 'x + x')
+        self.assertEqual(str(fx), 'x*%s' %rn(2))
 
         f = x*y
         fx = f.get_derivative(x)

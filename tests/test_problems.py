@@ -101,18 +101,15 @@ class TestProblems(unittest.TestCase):
         self.assertEqual(len(cJ_list), len(f_list))
 
         self.assertEqual(str(phi), 'x*x + x*2.00e+00*y + y*y')
-        self.assertTrue(str(gphi_list) == '[(x, y*2.00e+00 + x + x), (y, y + y + x*2.00e+00)]' or
-                        str(gphi_list) == '[(x, y*2.00e+00 + x + x), (y, x*2.00e+00 + y + y)]' or
-                        str(gphi_list) == '[(x, x + x + y*2.00e+00), (y, x*2.00e+00 + y + y)]' or
-                        str(gphi_list) == '[(x, x + x + y*2.00e+00), (y, y + y + x*2.00e+00)]')
+        self.assertEqual(str(gphi_list), '[(x, y*2.00e+00 + x*2.00e+00), (y, y*2.00e+00 + x*2.00e+00)]')
         self.assertEqual(str(Hphi_list), '[(x, x, 2.00e+00), (x, y, 2.00e+00), (y, y, 2.00e+00)]')
 
         self.assertEqual(str(A_list), '[(0, x, 1.0), (0, y, 1.0), (1, x, 3.0), (1, s, -1.0)]')
         self.assertEqual(str(b_list), '[3.0, 10.0]')
 
-        self.assertEqual(str(f_list), '[x*y - 2.00e+01, sin(x) - 3.00e+00 - s, cos(y) - 4.00e+00 - s]')
-        self.assertEqual(str(J_list), '[(0, x, y), (0, y, x), (1, x, cos(x)), (1, s, -1.00e+00), (2, y, -sin(y)), (2, s, -1.00e+00)]')
-        self.assertEqual(str(H_list), '[[(x, y, 1.00e+00)], [(x, x, -sin(x))], [(y, y, -1.00e+00*cos(y))]]')
+        self.assertEqual(str(f_list), '[x*y + -2.00e+01, sin(x) + s*-1.00e+00 + -3.00e+00, cos(y) + s*-1.00e+00 + -4.00e+00]')
+        self.assertEqual(str(J_list), '[(0, x, y), (0, y, x), (1, x, cos(x)), (1, s, -1.00e+00), (2, y, sin(y)*-1.00e+00), (2, s, -1.00e+00)]')
+        self.assertEqual(str(H_list), '[[(x, y, 1.00e+00)], [(x, x, sin(x)*-1.00e+00)], [(y, y, -1.00e+00*cos(y))]]')
 
         self.assertEqual(str([(x[0], x[1]) for x in u_list]), '[(x, 10.0), (s, 0), (s, 0)]')
         self.assertEqual(str([(x[0], x[1]) for x in l_list]), '[(y, 19.0), (s, 0)]')
