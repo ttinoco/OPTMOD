@@ -398,6 +398,10 @@ class Problem(object):
         std_prob = self.__get_std_problem__(fast_evaluator=fast_evaluator)
         time_transformation = time.time()-t0
 
+        # Info
+        if 'quiet' not in parameters or not parameters['quiet']:
+            std_prob.show()
+
         # Solver
         if solver == 'augl':
             solver = optalg.opt_solver.OptSolverAugL()

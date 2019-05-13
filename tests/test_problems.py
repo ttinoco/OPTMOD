@@ -599,15 +599,15 @@ class TestProblems(unittest.TestCase):
         self.assertListEqual(std_prob.properties, ['linear', 'integer', 'optimization'])
 
         try:
-            self.assertRaises(TypeError, p.solve, 'ipopt')
+            self.assertRaises(TypeError, p.solve, 'ipopt', {'quiet': True})
         except ImportError:
             raise unittest.SkipTest('ipopt not available')
         self.assertRaises(TypeError, p.solve, 'augl')
         try:
-            self.assertRaises(TypeError, p.solve, 'clp')
+            self.assertRaises(TypeError, p.solve, 'clp', {'quiet': True})
         except ImportError:
             raise unittest.SkipTest('clp not available')
-        self.assertRaises(TypeError, p.solve, 'inlp')
+        self.assertRaises(TypeError, p.solve, 'inlp', {'quiet': True})
 
         try:
             info = p.solve('cbc', parameters={'quiet': True})
@@ -667,11 +667,11 @@ class TestProblems(unittest.TestCase):
         self.assertListEqual(std_prob.properties, ['nonlinear', 'continuous', 'feasibility'])
 
         try:
-            self.assertRaises(TypeError, p.solve, 'clp')
+            self.assertRaises(TypeError, p.solve, 'clp', {'quiet': True})
         except ImportError:
             raise unittest.SkipTest('clp not available')
         try:
-            self.assertRaises(TypeError, p.solve, 'cbc')
+            self.assertRaises(TypeError, p.solve, 'cbc', {'quiet': True})
         except ImportError:
             raise unittest.SkipTest('cbc not available')
 
