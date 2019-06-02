@@ -18,6 +18,20 @@ class TestExpressions(unittest.TestCase):
         self.assertSetEqual(f.get_variables(),
                             set([x[i,j] for i in range(2) for j in range(3)]+[y]))
 
+    def test_get_derivatives(self):
+
+        x = optmod.VariableScalar(name='x', value=5.)
+        y = optmod.VariableScalar(name='y', value=3.)
+        z = optmod.VariableScalar(name='z', value=10.)
+
+        f = 2*x + optmod.cos(x*y)
+
+        d = f.get_derivatives([x,y,z])
+
+        self.assertEqual(d[x].get_value(), 2 - np.sin(5*3.)*3)
+        self.assertEqual(d[y].get_value(), -np.sin(5*3.)*5)
+        self.assertEqual(d[z].get_value(), 0.)
+
     def test_scalar_get_fast_evaluator(self):
 
         x = optmod.VariableScalar(name='x', value=2.)

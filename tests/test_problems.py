@@ -2,7 +2,7 @@ import optmod
 import unittest
 import numpy as np
 from numpy.linalg import norm
-from optmod import minimize, maximize, EmptyObjective
+from optmod import minimize, maximize, EmptyObjective, cos, sin
 
 class TestProblems(unittest.TestCase):
 
@@ -101,7 +101,7 @@ class TestProblems(unittest.TestCase):
         self.assertEqual(len(cJ_list), len(f_list))
 
         self.assertEqual(str(phi), 'x*x + x*2.00e+00*y + y*y')
-        self.assertEqual(str(gphi_list), '[(x, y*2.00e+00 + x + x), (y, y + y + x*2.00e+00)]')
+        self.assertEqual(str(gphi_list), '[(x, x + x + y*2.00e+00), (y, x*2.00e+00 + y + y)]')
         self.assertEqual(str(Hphi_list), '[(x, x, 2.00e+00), (x, y, 2.00e+00), (y, y, 2.00e+00)]')
 
         self.assertEqual(str(A_list), '[(0, x, 1.0), (0, y, 1.0), (1, x, 3.0), (1, s, -1.0)]')
@@ -602,7 +602,7 @@ class TestProblems(unittest.TestCase):
             self.assertRaises(TypeError, p.solve, 'ipopt', {'quiet': True})
         except ImportError:
             raise unittest.SkipTest('ipopt not available')
-        self.assertRaises(TypeError, p.solve, 'augl')
+        self.assertRaises(TypeError, p.solve, 'augl', {'quiet': True})
         try:
             self.assertRaises(TypeError, p.solve, 'clp', {'quiet': True})
         except ImportError:
@@ -687,3 +687,54 @@ class TestProblems(unittest.TestCase):
 
         self.assertEqual(info['status'], 'solved')
         self.assertAlmostEqual(x.get_value(), 0.739085133215161, places=7)
+
+    def test_solve_NLP_beam(self):
+
+        N = 500
+        h = 1./N
+        alpha = 350.
+        
+        t = optmod.VariableMatrix('t', shape=(N+1,1))
+        x = optmod.VariableMatrix('x', shape=(N+1,1))
+        u = optmod.VariableMatrix('u', shape=(N+1,1))
+        
+        f = sum([0.5*h*(u[i,0]*u[i,0]+u[i+1,0]*u[i+1,0]) +
+                 0.5*alpha*h*(cos(t[i,0]) + cos(t[i+1,0]))
+                 for i in range(N)])
+        
+        constraints = []
+        for i in range(N):
+            constraints.append(x[i+1,0] - x[i,0] - 0.5*h*(sin(t[i+1,0])+sin(t[i,0])) == 0)
+            constraints.append(t[i+1,0] - t[i,0] - 0.5*h*(u[i+1,0] - u[i,0]) == 0)
+        constraints.append(t <= 1)
+        constraints.append(t >= -1)
+        constraints.append(-0.05 <= x)
+        constraints.append(x <= 0.05)
+
+        p = optmod.Problem(minimize(f), constraints)
+
+        try:
+            info = p.solve(solver='ipopt', parameters={'quiet': True})
+        except ImportError:
+            raise unittest.SkipTest('ipopt not available')
+        
+        self.assertEqual(info['status'], 'solved')
+        self.assertAlmostEqual(f.get_value(), 350.)
+
+    def test_solve_NLP_rosenbrock(self):
+
+        N = 500
+
+        x = optmod.VariableMatrix(name='x', shape=(N,1))
+        
+        f = 0.
+        for i in range(N-1):
+            f = f + 100*(x[i+1,0]-x[i,0]*x[i,0]) * (x[i+1,0] - x[i,0]*x[i,0]) + (1-x[i,0])*(1-x[i,0])
+    
+        p = optmod.Problem(minimize(f))
+
+        info = p.solve(solver='ipopt', parameters={'quiet': True, 'max_iter': 1500})
+
+        self.assertEqual(info['status'], 'solved')
+        self.assertAlmostEqual(f.get_value(), 0.)
+        self.assertTrue(np.all(np.abs(x.get_value()-1.) < 1e-10))

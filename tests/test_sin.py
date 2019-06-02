@@ -1,7 +1,6 @@
 import optmod
 import unittest
 import numpy as np
-import networkx as nx
 
 class TestSin(unittest.TestCase):
 
@@ -77,14 +76,14 @@ class TestSin(unittest.TestCase):
         y = optmod.variable.VariableScalar(name='y')
 
         f = optmod.sin(x)
-        prop = f.__analyze__(nx.MultiDiGraph(), '')
+        prop = f.__analyze__()
         self.assertFalse(prop['affine'])
         self.assertTrue(prop['b'] is np.NaN)
         self.assertEqual(len(prop['a']), 1.)
         self.assertTrue(x in prop['a'])
 
         f = optmod.sin(-4.*(-y+3*x-2))
-        prop = f.__analyze__(nx.MultiDiGraph(), '')
+        prop = f.__analyze__()
         self.assertFalse(prop['affine'])
         self.assertTrue(prop['b'] is np.NaN)
         self.assertEqual(len(prop['a']), 2.)
@@ -92,7 +91,7 @@ class TestSin(unittest.TestCase):
         self.assertTrue(y in prop['a'])
 
         f = optmod.sin((4.+x)*(-y+3*x-2))
-        prop = f.__analyze__(nx.MultiDiGraph(), '')
+        prop = f.__analyze__()
         self.assertFalse(prop['affine'])
         self.assertTrue(prop['b'] is np.NaN)
         self.assertEqual(len(prop['a']), 2.)

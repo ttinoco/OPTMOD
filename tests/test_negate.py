@@ -1,20 +1,18 @@
 import optmod
 import unittest
 import numpy as np
-import networkx as nx
 
 class TestNegate(unittest.TestCase):
 
     def test_contruction(self):
 
         x = optmod.variable.VariableScalar(name='x')
-        f = optmod.function.negate(x)
-        self.assertTrue(isinstance(f, optmod.function.negate))
-        self.assertEqual(f.name, 'negate')
-        self.assertEqual(len(f.arguments), 1)
+        f = -x
+        self.assertTrue(isinstance(f, optmod.function.multiply))
+        self.assertEqual(f.name, 'multiply')
+        self.assertEqual(len(f.arguments), 2)
         self.assertTrue(f.arguments[0] is x)
-
-        self.assertRaises(TypeError, optmod.function.negate, [x, 1., 2.])
+        self.assertTrue(f.arguments[1].is_constant(-1.))
 
     def test_constant(self):
 
@@ -89,14 +87,14 @@ class TestNegate(unittest.TestCase):
         y = optmod.variable.VariableScalar(name='y')
 
         f = -x
-        prop = f.__analyze__(nx.MultiDiGraph(), '')
+        prop = f.__analyze__()
         self.assertTrue(prop['affine'])
         self.assertEqual(prop['b'], 0.)
         self.assertEqual(len(prop['a']), 1.)
         self.assertEqual(prop['a'][x], -1.)
 
         f = -4.*(-y+3*x-2)
-        prop = f.__analyze__(nx.MultiDiGraph(), '')
+        prop = f.__analyze__()
         self.assertTrue(prop['affine'])
         self.assertEqual(prop['b'], 8.)
         self.assertEqual(len(prop['a']), 2.)
@@ -104,7 +102,7 @@ class TestNegate(unittest.TestCase):
         self.assertEqual(prop['a'][y], 4.)
 
         f = -(4.+x)*(-y+3*x-2)
-        prop = f.__analyze__(nx.MultiDiGraph(), '')
+        prop = f.__analyze__()
         self.assertFalse(prop['affine'])
         self.assertEqual(prop['b'], 8.)
         self.assertEqual(len(prop['a']), 2.)

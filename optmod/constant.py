@@ -19,10 +19,8 @@ class Constant(Expression):
 
         return utils.repr_number(self.__value__)
 
-    def __analyze__(self, G, prefix):
+    def __analyze__(self):
         
-        G.add_node(self.__node__(prefix), item=self)
-
         return {'affine': True,
                 'a': {}, 
                 'b': self.__value__}

@@ -1,13 +1,13 @@
 import numpy as np
-import networkx as nx
 from . import coptmod
 from functools import reduce
 from .constant import Constant
+from collections import defaultdict
 from .variable import VariableScalar
 from .expression import Expression, ExpressionMatrix, make_Expression
 
 class Function(Expression):
-
+    
     arguments = []
 
     def __init__(self, args=[]):
@@ -20,14 +20,12 @@ class Function(Expression):
         args = [x.__repr__() for x in self.arguments]
         return '%s(%s)' %(self.name, ','.join(args))
 
-    def __analyze__(self, G, prefix):
+    def __analyze__(self):
 
         a = {}
 
-        G.add_node(self.__node__(prefix), item=self)
         for i, arg in enumerate(self.arguments):
-            G.add_edge(self.__node__(prefix), arg.__node__(prefix+'%d.' %i))
-            prop = arg.__analyze__(G, prefix+'%d.' %i)
+            prop = arg.__analyze__()
             a.update(prop['a'])
             
         return {'affine': False,
@@ -48,30 +46,37 @@ class Function(Expression):
         for arg in self.arguments:
             arg.__fill_evaluator__(evaluator)
 
-    def get_derivative(self, var, G=None):
+    def __all_simple_paths__(self, vars, path):
 
-        if not isinstance(var, VariableScalar):
-            raise TypeError('argument must be a variable')
+        if any([not isinstance(var, VariableScalar) for var in vars]):
+            raise TypeError('agrument must be set of variables')
 
-        if G is None:
-            G = nx.MultiDiGraph()
-            self.__analyze__(G, '')
-            
-        try:
-            paths = nx.all_simple_paths(G, source=self.__node__(''), target=var.__node__(''))
-        except Exception:
-            return make_Expression(0.)
+        vars = set(vars)
+        
+        path = path + (self,)
+        paths = defaultdict(list)
+        for arg in self.arguments:
+            if arg in vars:
+                paths[arg].append(path+(arg,))
+            elif arg.is_function():
+                for key, value in arg.__all_simple_paths__(vars, path).items():
+                    paths[key].extend(value)
+        return paths
 
-        d = 0.
-        for path in paths:            
-            prod = make_Expression(1.)
-            for parent_node, child_node in zip(path[:-1], path[1:]):
-                parent = G.node[parent_node]['item']
-                child = G.node[child_node]['item']
-                prod = prod*parent.__partial__(child)
-            d = d + prod
-        return d
-
+    def get_derivatives(self, vars):
+        
+        paths = self.__all_simple_paths__(vars, ())
+        derivs = {}
+        for var in vars:
+            d = 0.
+            for path in paths[var]:            
+                prod = make_Expression(1.)
+                for parent, child in zip(path[:-1], path[1:]):
+                    prod = prod*parent.__partial__(child)
+                d = d + prod
+            derivs[var] = make_Expression(d)
+        return derivs
+        
     def get_variables(self):
     
         return reduce(lambda x,y: x.union(y),
@@ -137,17 +142,13 @@ class add(Function):
                 return make_Expression(1.)
         raise ValueError('invalid argument')
 
-    def __analyze__(self, G, prefix):
+    def __analyze__(self):
 
         args = self.arguments
         
-        G.add_node(self.__node__(prefix), item=self)
-        for i, arg in enumerate(args):
-            G.add_edge(self.__node__(prefix), arg.__node__(prefix+'%d.' %i))
-
         props = []
         for i, arg in enumerate(args):
-            props.append(arg.__analyze__(G, prefix+'%d.' %i))
+            props.append(arg.__analyze__())
 
         new_a = props[0]['a']
         for prop in props[1:]:
@@ -168,65 +169,6 @@ class add(Function):
     def __set_value__(self):
 
         self.__value__ = np.sum(list(map(lambda a: a.__value__, self.arguments)))
-
-class subtract(Function):
-
-    def __init__(self, args):
-        
-        Function.__init__(self, args)
-        
-        self.name = 'subtract'
-        assert(len(self.arguments) == 2)
-        
-    def __repr__(self):
-
-        a = self.arguments[0]
-        b = self.arguments[1]
-
-        return '%s - %s' %(a.__repr__(),
-                           ('(%s)' %b.__repr__()) if (isinstance(b, add) or
-                                                      isinstance(b, subtract)) else b.__repr__())
-
-    def __partial__(self, arg):
-
-        if arg is self.arguments[0]:
-            return make_Expression(1.)
-
-        elif arg is self.arguments[1]:
-            return make_Expression(-1.)
-
-        else:
-            raise ValueError('invalid argument')
-
-    def __analyze__(self, G, prefix):
-        
-        arg1, arg2 = self.arguments
-        
-        G.add_node(self.__node__(prefix), item=self)
-        G.add_edge(self.__node__(prefix), arg1.__node__(prefix+'0.'))
-        G.add_edge(self.__node__(prefix), arg2.__node__(prefix+'1.'))
-
-        prop1 = arg1.__analyze__(G, prefix+'0.')
-        prop2 = arg2.__analyze__(G, prefix+'1.')
-
-        new_a = prop1['a']
-        for x in prop2['a']:
-            if x in new_a:
-                new_a[x] -= prop2['a'][x]
-            else:
-                new_a[x] = -prop2['a'][x]
-
-        return {'affine': prop1['affine'] and prop2['affine'],
-                'a': new_a,
-                'b': prop1['b'] - prop2['b']}
-
-    def __evaluator_node_type__(self):
-            
-        return coptmod.NODE_TYPE_SUBTRACT
-        
-    def __set_value__(self):
-        
-        self.__value__ = self.arguments[0].__value__-self.arguments[1].__value__
     
 class multiply(Function):
 
@@ -258,16 +200,12 @@ class multiply(Function):
         else:
             raise ValueError('invalid argument')
 
-    def __analyze__(self, G, prefix):
+    def __analyze__(self):
 
         arg1, arg2 = self.arguments
         
-        G.add_node(self.__node__(prefix), item=self)
-        G.add_edge(self.__node__(prefix), arg1.__node__(prefix+'0.'))
-        G.add_edge(self.__node__(prefix), arg2.__node__(prefix+'1.'))
-
-        prop1 = arg1.__analyze__(G, prefix+'0.')
-        prop2 = arg2.__analyze__(G, prefix+'1.')
+        prop1 = arg1.__analyze__()
+        prop2 = arg2.__analyze__()
 
         a1 = dict([(x, val*prop2['b']) for x, val in prop1['a'].items()])
         a2 = dict([(x, val*prop1['b']) for x, val in prop2['a'].items()])
@@ -286,65 +224,6 @@ class multiply(Function):
     def __set_value__(self):
 
         self.__value__ = np.prod([a.__value__ for a in self.arguments])
-
-class negate(ElementWiseFunction):
-
-    def __new__(cls, arg):
-
-        if isinstance(arg, negate):
-            return arg.arguments[0]
-
-        elif isinstance(arg, Constant):
-            return make_Expression(-arg.__value__)
-
-        else:
-            return super(negate, cls).__new__(cls, arg)
-            
-    def __init__(self, arg):
-
-        ElementWiseFunction.__init__(self, arg)
-        
-        self.name = 'negate'
-
-    def __repr__(self):
-        
-        a = self.arguments[0]
-        
-        needp = lambda x: True if (isinstance(x, add) or
-                                   isinstance(x, subtract)) else False
-
-        return '-%s' %('(%s)' %str(a) if needp(a) else '%s' %str(a))
-
-    def __partial__(self, arg):
-
-        if arg is self.arguments[0]:
-            return make_Expression(-1.)
-
-        else:
-            raise ValueError('invalid argument')
-
-    def __analyze__(self, G, prefix):
-
-        arg = self.arguments[0]
-        
-        G.add_node(self.__node__(prefix), item=self)
-        G.add_edge(self.__node__(prefix), arg.__node__(prefix+'0.'))
-
-        prop = arg.__analyze__(G, prefix+'0.')
-
-        new_a = dict([(x, -val) for x, val in prop['a'].items()])
-
-        return {'affine': prop['affine'],
-                'a': new_a,
-                'b': -prop['b']}
-
-    def __evaluator_node_type__(self):
-            
-        return coptmod.NODE_TYPE_NEGATE
-        
-    def __set_value__(self):
-
-        self.__value__ =  -self.arguments[0].__value__
 
 class sin(ElementWiseFunction):
 

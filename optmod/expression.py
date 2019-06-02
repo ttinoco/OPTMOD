@@ -1,5 +1,4 @@
 import numpy as np
-import networkx as nx
 from . import coptmod
 from functools import reduce
 from collections import OrderedDict
@@ -197,8 +196,7 @@ class Expression(object):
         gphi_list = []
         Hphi_list = []
 
-        G = nx.MultiDiGraph()
-        prop = self.__analyze__(G, '')
+        prop = self.__analyze__()
 
         # Affine
         if prop['affine']:
@@ -207,21 +205,19 @@ class Expression(object):
 
         # Not affine
         else:
-            vars = list(prop['a'].keys())
-            n = len(vars)
-            for i in range(0, n):
-                var1 = vars[i]
-                d = self.get_derivative(var1, G=G)
+            vars_set = set(prop['a'].keys())
+            vars_list = list(vars_set)
+            derivs = self.get_derivatives(vars_set)
+            for i, var1 in enumerate(vars_list):
+                d = derivs[var1]
                 gphi_list.append((var1, d))
-                dG = nx.MultiDiGraph()
-                dprop = d.__analyze__(dG, '')
-                dvars = set(dprop['a'].keys())
-                for j in range(i, n):
-                    var2 = vars[j]
-                    if var2 not in dvars:
-                        continue
-                    dd = d.get_derivative(var2, G=dG)
-                    Hphi_list.append((var1, var2, dd))
+                dvars_list = vars_list[i:]
+                dvars_set = set(dvars_list)
+                dderivs = d.get_derivatives(dvars_set) 
+                for var2 in dvars_list:
+                    dd = dderivs[var2]
+                    if not dd.is_constant(0.):
+                        Hphi_list.append((var1, var2, dd))
 
         # Return
         return {'phi': phi,
@@ -241,9 +237,13 @@ class Expression(object):
 
         pass
 
-    def get_derivative(self, var, G=None):
+    def get_derivative(self, var):
 
-        return make_Expression(0.)
+        return self.get_derivatives(set([var]))[var]
+
+    def get_derivatives(self, vars):
+
+        return dict((var, make_Expression(0.)) for var in vars)
 
     def get_value(self):
 

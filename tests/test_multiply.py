@@ -1,7 +1,6 @@
 import optmod
 import unittest
 import numpy as np
-import networkx as nx
 
 class TestMultiply(unittest.TestCase):
 
@@ -163,21 +162,21 @@ class TestMultiply(unittest.TestCase):
         z = optmod.variable.VariableScalar(name='z', value=5.)
 
         f = 3*x
-        prop = f.__analyze__(nx.MultiDiGraph(), '')
+        prop = f.__analyze__()
         self.assertTrue(prop['affine'])
         self.assertEqual(prop['b'], 0.)
         self.assertEqual(len(prop['a']), 1)
         self.assertEqual(prop['a'][x], 3.)
 
         f = x*7
-        prop = f.__analyze__(nx.MultiDiGraph(), '')
+        prop = f.__analyze__()
         self.assertTrue(prop['affine'])
         self.assertEqual(prop['b'], 0.)
         self.assertEqual(len(prop['a']), 1)
         self.assertEqual(prop['a'][x], 7.)
 
         f = y*x
-        prop = f.__analyze__(nx.MultiDiGraph(), '')
+        prop = f.__analyze__()
         self.assertFalse(prop['affine'])
         self.assertEqual(prop['b'], 0.)
         self.assertEqual(len(prop['a']), 2)
@@ -185,7 +184,7 @@ class TestMultiply(unittest.TestCase):
         self.assertTrue(y in prop['a'])
 
         f = y*x*z
-        prop = f.__analyze__(nx.MultiDiGraph(), '')
+        prop = f.__analyze__()
         self.assertFalse(prop['affine'])
         self.assertEqual(prop['b'], 0.)
         self.assertEqual(len(prop['a']), 3)

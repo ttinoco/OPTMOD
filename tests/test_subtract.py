@@ -1,7 +1,6 @@
 import optmod
 import unittest
 import numpy as np
-import networkx as nx
 
 class TestSubtract(unittest.TestCase):
 
@@ -9,14 +8,12 @@ class TestSubtract(unittest.TestCase):
         
         x = optmod.variable.VariableScalar(name='x')
 
-        f = optmod.function.subtract([x, optmod.expression.make_Expression(1.)])
-        self.assertEqual(f.name, 'subtract')
+        f = x-1
+        self.assertEqual(f.name, 'add')
         self.assertEqual(len(f.arguments), 2)
         self.assertTrue(f.arguments[0] is x)
         self.assertTrue(isinstance(f.arguments[1], optmod.constant.Constant))
-        self.assertEqual(f.arguments[1].get_value(), 1.)
-
-        self.assertRaises(AssertionError, optmod.function.subtract, [x, 1., 2.])
+        self.assertEqual(f.arguments[1].get_value(), -1.)
 
     def test_constant_constant(self):
 
@@ -229,21 +226,21 @@ class TestSubtract(unittest.TestCase):
         y = optmod.variable.VariableScalar('y')
 
         f = x - 1
-        prop = f.__analyze__(nx.MultiDiGraph(), '')
+        prop = f.__analyze__()
         self.assertTrue(prop['affine'])
         self.assertEqual(prop['b'], -1.)
         self.assertEqual(len(prop['a']), 1)
         self.assertEqual(prop['a'][x], 1.)
 
         f = 2 - x
-        prop = f.__analyze__(nx.MultiDiGraph(), '')
+        prop = f.__analyze__()
         self.assertTrue(prop['affine'])
         self.assertEqual(prop['b'], 2.)
         self.assertEqual(len(prop['a']), 1)
         self.assertEqual(prop['a'][x], -1.)
 
         f = x - y - x
-        prop = f.__analyze__(nx.MultiDiGraph(), '')
+        prop = f.__analyze__()
         self.assertTrue(prop['affine'])
         self.assertEqual(prop['b'], 0.)
         self.assertEqual(len(prop['a']), 2)
@@ -251,7 +248,7 @@ class TestSubtract(unittest.TestCase):
         self.assertEqual(prop['a'][y], -1.)
 
         f = x - y - 10. - x
-        prop = f.__analyze__(nx.MultiDiGraph(), '')
+        prop = f.__analyze__()
         self.assertTrue(prop['affine'])
         self.assertEqual(prop['b'], -10.)
         self.assertEqual(len(prop['a']), 2)
@@ -271,7 +268,7 @@ class TestSubtract(unittest.TestCase):
         self.assertTrue(isinstance(fy, optmod.constant.Constant))
         self.assertEqual(fy.get_value(), 0.)
         
-        f = x - y
+        f = x - y        
         fx = f.get_derivative(x)
         fy = f.get_derivative(y)
         self.assertTrue(isinstance(fx, optmod.constant.Constant))

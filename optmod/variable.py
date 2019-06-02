@@ -34,10 +34,6 @@ class VariableScalar(Expression):
 
         return self.name
 
-    def __node__(self, prefix):
-
-        return ('', id(self))
-
     def __evaluator_node_type__(self):
 
         return coptmod.NODE_TYPE_VARIABLE
@@ -49,20 +45,16 @@ class VariableScalar(Expression):
                            self.__value__,
                            [])
 
-    def __analyze__(self, G, prefix):
-
-        G.add_node(self.__node__(prefix), item=self)
+    def __analyze__(self):
 
         return {'affine': True,
                 'a': {self: 1.},
                 'b': 0.}
 
-    def get_derivative(self, var, G=None):
+    def get_derivatives(self, vars):
 
-        if self is var:
-            return make_Expression(1.)
-        else:
-            return make_Expression(0.)
+        return dict((var, make_Expression(1.) if var is self else make_Expression(0.))
+                    for var in vars)
 
     def get_variables(self):
 

@@ -1,7 +1,6 @@
 import optmod
 import unittest
 import numpy as np
-import networkx as nx
 
 class TestAdd(unittest.TestCase):
 
@@ -236,7 +235,7 @@ class TestAdd(unittest.TestCase):
         x = optmod.variable.VariableScalar(name='x', value=3.)
         y = optmod.variable.VariableScalar(name='y', value=4.)
 
-        f = x + 1
+        f = x + 1        
         fx = f.get_derivative(x)
         fy = f.get_derivative(y)
         
@@ -280,21 +279,21 @@ class TestAdd(unittest.TestCase):
         y = optmod.variable.VariableScalar('y')
 
         f = x + 1
-        prop = f.__analyze__(nx.MultiDiGraph(), '')
+        prop = f.__analyze__()
         self.assertTrue(prop['affine'])
         self.assertEqual(prop['b'], 1.)
         self.assertEqual(len(prop['a']), 1)
         self.assertEqual(prop['a'][x], 1.)
 
         f = 2 + x
-        prop = f.__analyze__(nx.MultiDiGraph(), '')
+        prop = f.__analyze__()
         self.assertTrue(prop['affine'])
         self.assertEqual(prop['b'], 2.)
         self.assertEqual(len(prop['a']), 1)
         self.assertEqual(prop['a'][x], 1.)
 
         f = x + y + x
-        prop = f.__analyze__(nx.MultiDiGraph(), '')
+        prop = f.__analyze__()
         self.assertTrue(prop['affine'])
         self.assertEqual(prop['b'], 0.)
         self.assertEqual(len(prop['a']), 2)
@@ -302,7 +301,7 @@ class TestAdd(unittest.TestCase):
         self.assertEqual(prop['a'][y], 1.)
 
         f = x + y + 10. + x
-        prop = f.__analyze__(nx.MultiDiGraph(), '')
+        prop = f.__analyze__()
         self.assertTrue(prop['affine'])
         self.assertEqual(prop['b'], 10.)
         self.assertEqual(len(prop['a']), 2)
