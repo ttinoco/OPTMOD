@@ -1,5 +1,6 @@
 # Cython
 coptmod.c
+coptmod.pyd
 
 # Compiled Object files
 *.slo
@@ -44,7 +45,4 @@ dist/
 *.so
 *egg*
 __pycache__
-
-# Optmod
-coptmod.c
-cdual.c
+setup.cfg

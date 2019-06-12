@@ -36,7 +36,7 @@ cdef class Evaluator:
 
     def add_node(self, type, id, value, arg_ids):
 
-        cdef np.ndarray[long, mode='c'] x = np.array(arg_ids, dtype=long)
+        cdef np.ndarray[long, mode='c'] x = np.array(arg_ids, dtype=np.int32)
         evaluator.EVALUATOR_add_node(self._ptr, type, id, value, <long*>(x.data), x.size)
 
     def get_value(self):
