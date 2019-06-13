@@ -1,3 +1,4 @@
+import sys
 cimport evaluator
 
 cdef class Evaluator:
@@ -35,8 +36,12 @@ cdef class Evaluator:
         self._ptr = NULL
 
     def add_node(self, type, id, value, arg_ids):
-
-        cdef np.ndarray[long, mode='c'] x = np.array(arg_ids, dtype=np.int32)
+        
+        cdef np.ndarray[long, mode='c'] x
+        if 'win32' in sys.platform.lower():
+            x = np.array(arg_ids, dtype=np.int32)
+        else:
+            x = np.array(arg_ids, dtype=long)
         evaluator.EVALUATOR_add_node(self._ptr, type, id, value, <long*>(x.data), x.size)
 
     def get_value(self):
