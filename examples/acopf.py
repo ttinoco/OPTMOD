@@ -78,7 +78,7 @@ problem = Problem(minimize(func), constraints)
 time_construction = time.time()-t
 
 # Solve
-info = problem.solve(solver='ipopt', parameters={'tol': 1e-4}, fast_evaluator=True)
+info = problem.solve(solver=optalg.opt_solver.OptSolverIpopt(), parameters={'tol': 1e-4}, fast_evaluator=True)
 print("OPTMOD", func.get_value())
 print(info)
 print('time construction', time_construction)

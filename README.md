@@ -49,6 +49,7 @@ speedup: 533.78
 ### Example NLP
 
 ```python
+from optalg.opt_solver import OptSolverIpopt
 from optmod import VariableScalar, Problem, minimize
 
 x1 = VariableScalar('x1', value=1)
@@ -67,7 +68,7 @@ constraints = [x1*x2*x3*x4 >= 25,
 
 p = Problem(minimize(f), constraints)
 
-p.solve(solver='ipopt', parameters={'quiet': False})
+p.solve(solver=OptSolverIpopt(), parameters={'quiet': False})
 
 print(f.get_value())
 
@@ -87,6 +88,7 @@ x4, 1.379
 ### Example MILP
 
 ```python
+from optalg.opt_solver import OptSolverCbcCMD
 from optmod import VariableScalar, Problem, minimize
 
 x1 = VariableScalar('x1', type='integer')
@@ -102,7 +104,7 @@ constraints = [-2*x1+2*x2+x3 == 1,
 
 p = Problem(minimize(f), constraints)
 
-p.solve(solver='cbc_cmd', parameters={'quiet': False})
+p.solve(solver=OptSolverCbcCMD(), parameters={'quiet': False})
 
 print(f.get_value())
 
@@ -122,6 +124,7 @@ x4, 1.0
 ### Example Newton-Raphson
 
 ```python
+from optalg.opt_solver import OptSolverNR
 from optmod import VariableScalar, Problem, EmptyObjective, cos
 
 x = VariableScalar('x', value=1.)
@@ -130,7 +133,7 @@ constraints = [x*cos(x)-x*x == 0]
         
 p = Problem(EmptyObjective(), constraints)
 
-info = p.solve('nr', parameters={'quiet': False, 'feastol': 1e-10})
+info = p.solve(OptSolverNR(), parameters={'quiet': False, 'feastol': 1e-10})
 
 print(x, x.get_value())
 ```

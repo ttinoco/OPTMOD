@@ -1,3 +1,4 @@
+from optalg.opt_solver import OptSolverCbcCMD
 from optmod import VariableScalar, Problem, minimize
 
 x1 = VariableScalar('x1', type='integer')
@@ -13,7 +14,7 @@ constraints = [-2*x1+2*x2+x3 == 1,
 
 p = Problem(minimize(f), constraints)
 
-p.solve(solver='cbc_cmd', parameters={'quiet': False})
+p.solve(solver=OptSolverCbcCMD(), parameters={'quiet': False})
 
 print(f.get_value())
 

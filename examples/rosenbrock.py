@@ -1,4 +1,5 @@
 import numpy as np
+from optalg.opt_solver import OptSolverIpopt
 from optmod import VariableMatrix, Problem, minimize
 
 N = 1000
@@ -11,7 +12,7 @@ for i in range(N-1):
     
 p = Problem(minimize(f))
 
-info = p.solve(solver='ipopt', parameters={'quiet': True, 'max_iter': 1500})
+info = p.solve(solver=OptSolverIpopt(), parameters={'quiet': True, 'max_iter': 1500})
 
 print(info)    
 print(f.get_value())

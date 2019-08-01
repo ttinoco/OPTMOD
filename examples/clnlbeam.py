@@ -1,6 +1,7 @@
 # Ported from https://github.com/JuliaOpt/JuMP.jl/blob/master/examples/clnlbeam.jl
 
 import optmod
+import optalg
 from optmod import sum, cos, sin, minimize
 
 N = 1000
@@ -26,7 +27,7 @@ constraints.append(x <= 0.05)
 
 p = optmod.Problem(minimize(f), constraints)
 
-info = p.solve(solver='ipopt', fast_evaluator=True)
+info = p.solve(solver=optalg.opt_solver.OptSolverIpopt(), fast_evaluator=True)
 
 print(info)
 print(f.get_value())

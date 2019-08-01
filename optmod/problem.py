@@ -385,9 +385,13 @@ class Problem(object):
     #
     #    return self.get_variables().union(*[c.get_variables() for c in self.constraints])
 
-    def solve(self, solver='ipopt', parameters=None, fast_evaluator=True):
+    def solve(self, solver=None, parameters=None, fast_evaluator=True):
 
         import optalg
+
+        # Solver
+        if solver is None:
+            solver = optalg.opt_solver.OptSolverINLP()
 
         # Params
         if parameters is None:
@@ -402,35 +406,11 @@ class Problem(object):
         if 'quiet' not in parameters or not parameters['quiet']:
             std_prob.show()
 
-        # Solver
-        if solver == 'augl':
-            solver = optalg.opt_solver.OptSolverAugL()
-        elif solver == 'ipopt':
-            solver = optalg.opt_solver.OptSolverIpopt()
-        elif solver == 'inlp':
-            solver = optalg.opt_solver.OptSolverINLP()
-        elif solver == 'clp':
-            solver = optalg.opt_solver.OptSolverClp()
-        elif solver == 'cbc':
-            solver = optalg.opt_solver.OptSolverCbc()
-        elif solver == 'clp_cmd':
-            solver = optalg.opt_solver.OptSolverClpCMD()
-        elif solver == 'cbc_cmd':
-            solver = optalg.opt_solver.OptSolverCbcCMD()
-        elif solver == 'cplex_cmd':
-            solver = optalg.opt_solver.OptSolverCplexCMD()
-        elif solver == 'iqp':
-            solver = optalg.opt_solver.OptSolverIQP()
-        elif solver == 'nr':
-            solver = optalg.opt_solver.OptSolverNR()
-        else:
-            raise ValueError('invalid solver %s' %solver)
-
         # Properties
         if not solver.supports_properties(std_prob.properties):
             raise TypeError('problem type not supported by solver')
 
-        # Configure
+        # Configure solver
         solver.set_parameters(parameters)
 
         # Solve

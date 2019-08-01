@@ -1,6 +1,7 @@
 # Hock-Schittkowski
 # Problem 71
 
+from optalg.opt_solver import OptSolverIpopt
 from optmod import VariableScalar, Problem, minimize
 
 x1 = VariableScalar('x1', value=1)
@@ -19,7 +20,7 @@ constraints = [x1*x2*x3*x4 >= 25,
 
 p = Problem(minimize(f), constraints)
 
-p.solve(solver='ipopt', parameters={'quiet': False})
+p.solve(solver=OptSolverIpopt(), parameters={'quiet': False})
 
 print(f.get_value())
 
