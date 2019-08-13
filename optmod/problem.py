@@ -89,6 +89,9 @@ class Problem(object):
         for c in constraints:
             if isinstance(c, Constraint):
                 self.constraints.append(c)
+            elif isinstance(c, bool) or isinstance(c, np.bool_):
+                if not c:
+                    raise ValueError('infeasible constraint')
             else:
                 self.constraints.extend(ConstraintArray(c).flatten().tolist())
         
