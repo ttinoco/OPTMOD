@@ -654,6 +654,54 @@ class TestProblems(unittest.TestCase):
         self.assertEqual(info['status'], 'solved')
         self.assertEqual(x1.get_value(), 1.)
         self.assertEqual(x2.get_value(), 2.)
+
+    def test_infeasible_MILP_cbc_cmd(self):
+
+        x1 = optmod.VariableScalar('x1', type='integer')
+        x2 = optmod.VariableScalar('x2', type='integer')
+        x3 = optmod.VariableScalar('x3')
+        x4 = optmod.VariableScalar('x4')
+
+        obj = -x1-x2
+        constr = [-2*x1+2*x2+x3 == 1,
+                  -8*x1+10*x2+x4 == 13,
+                  x1 >= 2,
+                  x1 <= 1,
+                  x4 >= 0,
+                  x3 <= 0]
+        
+        p = optmod.Problem(minimize(obj), constr)
+
+        try:
+            info = p.solve(optalg.opt_solver.OptSolverCbcCMD(), parameters={'quiet': True})
+        except ImportError:
+            raise unittest.SkipTest('cbc cmd not available')
+
+        self.assertEqual(info['status'], 'error')
+
+    def test_infeasible_MILP_cplex_cmd(self):
+
+        x1 = optmod.VariableScalar('x1', type='integer')
+        x2 = optmod.VariableScalar('x2', type='integer')
+        x3 = optmod.VariableScalar('x3')
+        x4 = optmod.VariableScalar('x4')
+
+        obj = -x1-x2
+        constr = [-2*x1+2*x2+x3 == 1,
+                  -8*x1+10*x2+x4 == 13,
+                  x1 >= 2,
+                  x1 <= 1,
+                  x4 >= 0,
+                  x3 <= 0]
+        
+        p = optmod.Problem(minimize(obj), constr)
+
+        try:
+            info = p.solve(optalg.opt_solver.OptSolverCplexCMD(), parameters={'quiet': True})
+        except ImportError:
+            raise unittest.SkipTest('cplex cmd not available')
+
+        self.assertEqual(info['status'], 'error')
         
     def test_solve_feasibility(self):
 

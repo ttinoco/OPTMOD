@@ -426,7 +426,7 @@ class Problem(object):
 
         # Get primal values
         x = solver.get_primal_variables()
-        if x is not None:
+        if x is not None and x.size:
             for i, var in std_prob.index2var.items():
                 var.set_value(x[i])
 
@@ -444,7 +444,7 @@ class Problem(object):
         if (pi is not None) and pi.size:
             for i, c in std_prob.lindex2constr.items():
                 c.set_dual(pi[i])
-
+                    
         # Info
         info = {'status': solver.get_status(),
                 'iterations': solver.get_iterations(),
