@@ -1,6 +1,6 @@
 import numpy as np
-from .expression import make_Expression
 from .variable import VariableScalar
+from .expression import make_Expression
 
 class Constraint(object):
     
@@ -9,11 +9,11 @@ class Constraint(object):
     rhs = None
 
     def __init__(self, lhs, op, rhs):
-
+        
         self.lhs = make_Expression(lhs)
         self.op = op
         self.rhs = make_Expression(rhs)
-        self.slack = None
+        self.slack = VariableScalar(name='s')
         self.dual = 0.
 
         assert(op in ['==', '>=', '<='])
@@ -89,7 +89,7 @@ class Constraint(object):
 
             else : # a^Tx + b - s == 0 and s <= 0 or s >= 0:
 
-                s = VariableScalar(name='s')
+                s = self.slack
                 for x, val in a.items():
                     A_list.append((counters['A_row'], x, val))
                 A_list.append((counters['A_row'], s, -1.))
@@ -101,7 +101,6 @@ class Constraint(object):
                     l_list.append((s, 0, self))
                 counters['A_row'] += 1
                 a[s] = 1.
-                self.slack = s
                 
         # Nonlinear
         else:
@@ -118,7 +117,7 @@ class Constraint(object):
 
             else: # f(x) - s == 0 and s <= 0 or s >= 0:
 
-                s = VariableScalar(name='s')
+                s = self.slack
                 f_list.append(phi-s)
                 cJ_list.append(self)
                 for x, val in gphi_list:
@@ -130,7 +129,6 @@ class Constraint(object):
                     l_list.append((s, 0, self))
                 counters['J_row'] += 1
                 a[s] = 1.
-                self.slack = s
         
         # Return
         return {'cA_list': cA_list,

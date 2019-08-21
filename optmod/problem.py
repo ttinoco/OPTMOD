@@ -131,7 +131,7 @@ class Problem(object):
         vars = set(comp['phi_prop']['a'].keys())
         for prop in comp['prop_list']:
             vars |= set(list(prop['a'].keys()))
-        vars = sorted(list(vars))
+        vars = sorted(list(vars), key=lambda x: x.id)
         num_vars = len(vars)
         var_values = np.array([x.get_value() for x in vars])
         

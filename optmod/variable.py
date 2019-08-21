@@ -1,5 +1,6 @@
 import numpy as np
 from . import coptmod
+from itertools import count
 from .expression import Expression, ExpressionMatrix, make_Expression
 
 class VariableDict(dict):
@@ -16,6 +17,8 @@ class VariableDict(dict):
 
 class VariableScalar(Expression):
 
+    _ids = count(0)
+
     def __init__(self, name='var', value=0., type='continuous'):
 
         if type not in ['integer', 'continuous']:
@@ -29,7 +32,8 @@ class VariableScalar(Expression):
         self.name = name
         self.__value__ = np.float64(value) if value is not None else 0.
         self.type = type
-
+        self.id = next(self._ids)
+        
     def __repr__(self):
 
         return self.name

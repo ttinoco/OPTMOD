@@ -9,11 +9,15 @@ class TestVariableScalars(unittest.TestCase):
         x = optmod.variable.VariableScalar()
         self.assertEqual(x.name, 'var')
         self.assertEqual(x.get_value(), 0.)
+        self.assertTrue(isinstance(x.id, int))
+        saved_id = x.id
         
         x = optmod.variable.VariableScalar(name='x', value=3)
         self.assertEqual(x.name, 'x')
         self.assertEqual(x.get_value(), 3.)
         self.assertTrue(isinstance(x.get_value(), np.float64))
+        self.assertTrue(isinstance(x.id, int))
+        self.assertEqual(x.id, saved_id + 1)
 
         x = optmod.VariableScalar()
         self.assertTrue(isinstance(x, optmod.variable.VariableScalar))

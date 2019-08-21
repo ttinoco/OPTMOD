@@ -7,6 +7,34 @@ from optmod import minimize, maximize, EmptyObjective, cos, sin
 
 class TestProblems(unittest.TestCase):
 
+    def test_var_order_consistency(self):
+        
+        x1 = optmod.variable.VariableScalar('x1')
+        x2 = optmod.variable.VariableScalar('x2')
+        x3 = optmod.variable.VariableScalar('x3')
+        x4 = optmod.variable.VariableScalar('x4')
+        f = x1 + x2
+        constraints= [x1 >= x2, x2 + x3 <= -4, 4*x4 >= x1]
+
+        p = optmod.Problem(minimize(f), constraints)
+
+        std_prob = p.__get_std_problem__()
+
+        A0 = std_prob.A.copy()
+
+        for i in range(1000):
+            x1 = optmod.variable.VariableScalar('x1')
+            x2 = optmod.variable.VariableScalar('x2')
+            x3 = optmod.variable.VariableScalar('x3')
+            x4 = optmod.variable.VariableScalar('x4')
+            f = x1 + x2
+            constraints= [x1 >= x2, x2 + x3 <= -4, 4*x4 >= x1]
+            p = optmod.Problem(minimize(f), constraints)
+            A1 = p.__get_std_problem__().A
+            self.assertTrue(np.all(A0.row == A1.row))
+            self.assertTrue(np.all(A0.col == A1.col))
+            self.assertTrue(np.all(A0.data == A1.data))
+            
     def test_construction(self):
         
         x = optmod.variable.VariableScalar('x')

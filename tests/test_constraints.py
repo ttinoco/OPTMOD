@@ -4,6 +4,27 @@ import numpy as np
 
 class TestConstraints(unittest.TestCase):
 
+    def test_slack(self):
+
+        x = optmod.variable.VariableScalar('x', value=2.)
+        y = optmod.variable.VariableScalar('y', value=3.)
+
+        c1 = x >= y
+        c2 = x <= y
+        c3 = x == y
+
+        self.assertEqual(c1.op, '>=')
+        self.assertEqual(c2.op, '<=')
+        self.assertEqual(c3.op, '==')
+
+        self.assertTrue(isinstance(c1.slack, optmod.variable.VariableScalar))
+        self.assertTrue(isinstance(c2.slack, optmod.variable.VariableScalar))
+        self.assertTrue(isinstance(c3.slack, optmod.variable.VariableScalar))
+
+        self.assertEqual(c1.slack.name, 's')
+        self.assertEqual(c2.slack.name, 's')
+        self.assertEqual(c3.slack.name, 's')
+
     def test_violation(self):
 
         x = optmod.variable.VariableScalar('x', value=2.)
