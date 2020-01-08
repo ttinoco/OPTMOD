@@ -21,7 +21,7 @@ ext_modules = cythonize([Extension(name='optmod.coptmod.coptmod',
 
 setup(name='OPTMOD',
       zip_safe=False,
-      version='0.0.1',
+      version='0.0.1rc1',
       description='Optimization Modeling Library',
       url='',
       author='Tomas Tinoco De Rubira',

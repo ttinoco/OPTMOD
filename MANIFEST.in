@@ -1,0 +1,15 @@
+include clean.sh
+include LICENSE.md
+include CHANGELOG.md
+include requirements.txt
+recursive-include optmod/coptmod *
+recursive-include docs *
+recursive-include examples *
+recursive-include tests *
+global-include *.pxd
+global-include *.pyx
+global-exclude *.pyc
+global-exclude __pycache__
+global-exclude *.so
+global-exclude *~
+global-exclude coptmod.c
